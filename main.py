@@ -1,0 +1,94 @@
+from fastapi import FastAPI, Request, Query, Depends
+from starlette.middleware.sessions import SessionMiddleware
+from starlette.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy.orm import Session
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+
+from routes import auth, asset, cmdb_import
+from routes.profile import profile_router
+from db import init_db, SessionLocal, get_db
+from apscheduler.schedulers.background import BackgroundScheduler
+from routes.cmdb_import import import_from_glpi
+from dotenv import load_dotenv
+from models.asset import Asset
+
+load_dotenv()
+
+templates = Jinja2Templates(directory="templates")
+
+class InjectUserMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        path = request.url.path
+        public_paths = ["/login", "/register", "/static", "/"]
+
+        user = None
+        if "session" in request.scope:
+            user_val = request.session.get("user")
+            
+            if isinstance(user_val, str):
+                user = {"username": user_val}
+            elif isinstance(user_val, dict):
+                user = user_val
+
+        request.state.user = user
+
+        if not user and not any(path.startswith(p) for p in public_paths):
+            return RedirectResponse("/login", status_code=303)
+
+        return await call_next(request)
+
+app = FastAPI()
+
+app.add_middleware(SessionMiddleware, secret_key="your-super-secret-key")
+app.add_middleware(InjectUserMiddleware)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+init_db()
+
+app.include_router(auth.router)
+app.include_router(profile_router)
+app.include_router(asset.router)
+app.include_router(cmdb_import.router, prefix="/cmdb")
+
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@app.get("/dashboard")
+def dashboard(request: Request, db: Session = Depends(get_db)):
+    user = request.session.get("user")
+    if not user:
+        return RedirectResponse("/login", status_code=303)
+
+    if isinstance(user, str):
+        user = {"username": user}
+
+    total_assets = db.query(Asset).count()
+    high_critical_count = db.query(Asset).filter(Asset.criticality == "High").count()
+
+
+    return templates.TemplateResponse(
+        "dashboard.html",
+        {
+            "request": request,
+            "user":user, 
+            "total_assets": total_assets,
+            "high_critical_count": high_critical_count
+        }
+    )
+
+def auto_import_job():
+    db = SessionLocal()
+    try:
+        import_from_glpi(db)
+    finally:
+        db.close()
+
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(auto_import_job, 'interval', minutes=30)
+    scheduler.start()
+

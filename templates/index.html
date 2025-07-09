@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>IRMAP — Анализ и управление рисками информационной безопасности</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        :root {
+            --irmap-blue: #0056b3;
+            --irmap-dark: #1a2a3a;
+            --irmap-accent: #00a8ff;
+            --irmap-light: #f8f9fa;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .section {
+            padding: 100px 0;
+        }
+        
+        .hero-section {
+            background: linear-gradient(rgba(0, 86, 179, 0.9), rgba(0, 86, 179, 0.9)), 
+                        url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center center;
+            background-size: cover;
+            color: white;
+            padding: 180px 0 120px;
+        }
+        
+        .feature-card {
+            border: none;
+            border-radius: 10px;
+            transition: all 0.3s;
+            height: 100%;
+            background-color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 168, 255, 0.1);
+        }
+        
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            background: rgba(0, 168, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .solution-box {
+            border-left: 4px solid var(--irmap-accent);
+            padding-left: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .navbar {
+            transition: all 0.3s;
+        }
+        
+        .navbar.scrolled {
+            background-color: var(--irmap-dark) !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-irmap {
+            background-color: var(--irmap-accent);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            font-weight: 600;
+            border: none;
+        }
+        
+        .btn-irmap:hover {
+            background-color: #0088cc;
+            color: white;
+        }
+        
+        .contact-info {
+            margin-bottom: 20px;
+        }
+        
+        .contact-info i {
+            color: var(--irmap-accent);
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+  
+<nav id="navbar" class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="#main">
+            <span style="font-weight: 700; color: var(--irmap-blue); font-size: 1.5rem;">IRMAP</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link translate" href="#main" data-key="menu_home">Главная</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link translate" href="#features" data-key="menu_features">Возможности</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link translate" href="#solutions" data-key="menu_solutions">Решения</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link translate" href="#contacts" data-key="menu_contacts">Контакты</a>
+                </li>
+                
+                <li class="nav-item dropdown ms-2">
+                    <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-globe"></i> <span class="translate" data-key="current_lang">Рус</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item language-option active" href="#" data-lang="ru">Русский</a></li>
+                        <li><a class="dropdown-item language-option" href="#" data-lang="kz">Қазақша</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <a href="/login" class="btn btn-outline-primary ms-3 translate" data-key="login_btn">Вход</a>
+        </div>
+    </div>
+</nav>
+
+<script>
+
+const navTranslations = {
+    ru: {
+        menu_home: "Главная",
+        menu_features: "Возможности",
+        menu_solutions: "Решения",
+        menu_contacts: "Контакты",
+        login_btn: "Вход",
+        current_lang: "Рус",
+        main_title: "Анализ и управление рисками информационной безопасности",
+        main_subtitle: "Комплексная платформа для автоматизированной оценки угроз, управления уязвимостями и защиты данных вашей организации",
+        try_free_btn: "Попробовать бесплатно",
+        learn_more_btn: "Узнать больше",
+        features_title: "Возможности IRMAP",
+        features_subtitle: "Инновационные инструменты для комплексного управления рисками ИБ",
+        feature1_title: "AI-анализ рисков",
+        feature1_text: "Наша система использует искусственный интеллект для выявления скрытых угроз и прогнозирования потенциальных атак с точностью до 95%.",
+        feature2_title: "Защита данных",
+        feature2_text: "Комплексный мониторинг уязвимостей и автоматизированные рекомендации по устранению рисков конфиденциальности.",
+        feature3_title: "Визуальная аналитика",
+        feature3_text: "Интерактивные дашборды и настраиваемые отчеты для наглядного представления уровня рисков и эффективности контролей.",
+        solutions_title: "Решения для вашего бизнеса",
+        solutions_subtitle: "Адаптируем платформу под специфику вашей отрасли и масштабы компании",
+        
+        solution1_title: "Для корпораций",
+        solution1_desc: "Комплексное решение для крупных предприятий с распределенной инфраструктурой и требованиями регуляторов РК:",
+        solution1_item1: "Интеграция с существующей ИБ-инфраструктурой",
+        solution1_item2: "Поддержка стандартов ISO 27001, NIST",
+        solution1_item3: "Мультитенантная архитектура",
+        
+        solution2_title: "Для финансового сектора",
+        solution2_desc: "Специализированные решения для банков, страховых и финтех-компаний Казахстана:",
+        solution2_item1: "Соответствие PCI DSS и требованиям Нацбанка РК",
+        solution2_item2: "Мониторинг транзакционных рисков",
+        solution2_item3: "Защита от кибермошенничества по стандартам РК",
+        
+        solution3_title: "Для государственных организаций",
+        solution3_desc: "Решения для защиты критической информационной инфраструктуры.",
+        solution3_item1: "Соответствие законам РК «О информационной безопасности»",
+        solution3_item2: "Защита персональных данных согласно законодательству Казахстана",
+        solution3_item3: "Сертификация в уполномоченных органах РК",
+        
+        solution4_title: "Для малого и среднего бизнеса",
+        solution4_desc: "Доступные решения с быстрым внедрением для компаний с ограниченными ИБ-ресурсами.",
+        solution4_item1: "Готовые шаблоны политик ИБ на казахском и русском",
+        solution4_item2: "Облачная версия с серверами в Казахстане",
+        solution4_item3: "Автоматизированные отчеты для регуляторов РК",
+        
+        consultation_btn: "Получение консультацию",
+        contacts_title: "Контакты",
+        contacts_subtitle: "Свяжитесь с нами для демонстрации возможностей платформы",
+        contacts_address: "г. Алматы, просп. Аль-Фараби, 71/23, офис ФИТ",
+        contacts_phone: "+7 (707) 451-41-82",
+        contacts_email: "info@irmap.kz",
+        contacts_hours: "Пн-Пт: 09:00 - 18:00",
+        
+        form_name: "Ваше имя",
+        form_email: "Email",
+        form_phone: "Телефон",
+        form_message: "Сообщение",
+        form_submit: "Отправить в Telegram",
+        msg_prefix: " Новый запрос:",
+
+        footer_title: "IRMAP",
+        footer_description: "Ведущая платформа для анализа и управления рисками информационной безопасности в Казахстане и СНГ.",
+        footer_sections: "Разделы",
+        footer_resources: "Ресурсы",
+        footer_docs: "Документация",
+        footer_blog: "Блог об ИБ",
+        footer_faq: "Частые вопросы",
+        footer_policy: "Политика конфиденциальности",
+        footer_copyright: "© 2025 IRMAP. Все права защищены.",
+        footer_developed: "Разработано с ❤️ для безопасности вашего бизнеса"
+    },
+    kz: {
+        menu_home: "Басты бет",
+        menu_features: "Мүмкіндіктер",
+        menu_solutions: "Шешімдер",
+        menu_contacts: "Байланыс",
+        login_btn: "Кіру",
+        current_lang: "Қаз",
+        main_title: "Ақпараттық қауіпсіздік тәуекелдерін талдау және басқару",
+        main_subtitle: "Сіздің ұйымыздың деректерін қорғауға, осалдықтарды басқаруға және қауіп-қатерлерді автоматты түрде бағалауға арналған кешенді платформа",
+        try_free_btn: "Тегін қолданып көріңіз",
+        learn_more_btn: "Қосымша ақпарат",
+        features_title: "IRMAP мүмкіндіктері",
+        features_subtitle: "Ақпараттық қауіпсіздік тәуекелдерін кешенді басқаруға арналған инновациялық құралдар",
+        feature1_title: "AI тәуекелдерді талдау",
+        feature1_text: "Біздің жүйе жасырын қауіп-қатерлерді анықтау және әлеуетті шабуылдарды 95% дәлдікпен болжау үшін жасанды интеллект пайдаланады.",
+        feature2_title: "Деректерді қорғау",
+        feature2_text: "Осалдықтарды кешенді мониторинг және құпиялық тәуекелдерін жою бойынша автоматты ұсыныстар.",
+        feature3_title: "Көрнекі талдау",
+        feature3_text: "Тәуекел деңгейін және бақылаудың тиімділігін көрнекі көрсету үшін интерактивті бақылау тақталары және реттелетін есептер.",
+        solutions_title: "Бизнесіңізге арналған шешімдер",
+        solutions_subtitle: "Платформаны саланыңыздың ерекшеліктеріне және компания көлеміне бейімдейміз",
+        
+        solution1_title: "Корпорациялар үшін",
+        solution1_desc: "Қазақстан Республикасы реттеуші органдарының талаптарын қоса алғанда, таратылған инфрақұрылымы бар ірі кәсіпорындарға арналған кешенді шешім:",
+        solution1_item1: "Қолданыстағы АКҚ инфрақұрылымымен интеграция",
+        solution1_item2: "ISO 27001, NIST стандарттарын қолдау",
+        solution1_item3: "Мультитенанттық архитектура",
+        
+        solution2_title: "Қаржы секторы үшін",
+        solution2_desc: "Қазақстанның банктеріне, сақтандыру компанияларына және финтех компанияларына арналған арнайы шешімдер:",
+        solution2_item1: "PCI DSS және Ұлттық Банк талаптарына сәйкестік",
+        solution2_item2: "Транзакциялық тәуекелдерді мониторингтеу",
+        solution2_item3: "ҚР стандарттары бойынша киберқылмыстықтан қорғау",
+        
+        solution3_title: "Мемлекеттік ұйымдар үшін",
+        solution3_desc: "Критикалық ақпараттық инфрақұрылымды қорғауға арналған шешімдер.",
+        solution3_item1: "ҚР «Ақпараттық қауіпсіздік туралы» заңына сәйкестік",
+        solution3_item2: "Қазақстан заңнамасына сәйкес жеке деректерді қорғау",
+        solution3_item3: "ҚР уәкілетті органдарында сертификаттау",
+        
+        solution4_title: "Шағын және орта бизнес үшін",
+        solution4_desc: "АКҚ ресурстары шектеулі компанияларға арналған тез енгізуге бейімделген қолжетімді шешімдер.",
+        solution4_item1: "Қазақ және орыс тілдеріндегі АКҚ саясатының дайын үлгілері",
+        solution4_item2: "Қазақстандағы серверлердегі бұлттық нұсқа",
+        solution4_item3: "ҚР реттеуші органдарына арналған автоматтандырылған есептер",
+        
+        consultation_btn: "Кеңес алу",
+
+        contacts_title: "Байланыс",
+        contacts_subtitle: "Платформа мүмкіндіктерін көрсету үшін хабарласыңыз",
+        contacts_address: "Алматы қ., Әл-Фараби даңғылы, 71/23, ФИТ кеңсесі",
+        contacts_phone: "+7 (707) 451-41-82",
+        contacts_email: "info@irmap.kz",
+        contacts_hours: "Дс-Жм: 09:00 - 18:00",
+        
+        form_name: "Аты-жөніңіз",
+        form_email: "Электрондық пошта",
+        form_phone: "Телефон",
+        form_message: "Хабарлама",
+        form_submit: "Telegram-ға жіберу",
+        msg_prefix: "Жаңа өтінім:",
+
+        footer_title: "IRMAP",
+        footer_description: "Қазақстанда және ОДКБ-да ақпараттық қауіпсіздік тәуекелдерін талдау және басқарудың жетекші платформасы",
+        footer_sections: "Бөлімдер",
+        footer_resources: "Ресурстар",
+        footer_docs: "Құжаттама",
+        footer_blog: "АКҚ блогы",
+        footer_faq: "Жиі қойылатын сұрақтар",
+        footer_policy: "Құпиялылық саясаты",
+        footer_copyright: "© 2025 IRMAP. Барлық құқықтар қорғалған.",
+        footer_developed: "Бизнесіңіздің қауіпсіздігі үшін ❤️ жасалған"
+
+    }
+};
+
+function translateNavigation(lang) {
+    document.querySelectorAll('.translate').forEach(element => {
+        const key = element.getAttribute('data-key');
+        if (navTranslations[lang] && navTranslations[lang][key]) {
+            element.textContent = navTranslations[lang][key];
+        }
+    });
+
+    document.querySelectorAll('[data-ph-key]').forEach(element => {
+        const key = element.getAttribute('data-ph-key');
+        if (navTranslations[lang] && navTranslations[lang][key]) {
+            element.setAttribute('placeholder', navTranslations[lang][key]);
+        }
+    });
+
+   document.querySelectorAll('.language-option').forEach(option => {
+        option.classList.toggle('active', option.getAttribute('data-lang') === lang);
+    });
+
+    localStorage.setItem('preferredLanguage', lang);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const savedLang = localStorage.getItem('preferredLanguage') || 'ru';
+    translateNavigation(savedLang);
+
+    document.querySelectorAll('.language-option').forEach(option => {
+        option.addEventListener('click', function(e) {
+            e.preventDefault();
+            const lang = this.getAttribute('data-lang');
+            translateNavigation(lang);
+        });
+    });
+});
+
+</script>
+
+<style>
+.navbar .dropdown-toggle::after {
+    margin-left: 5px;
+}
+.language-option.active {
+    background-color: #f8f9fa;
+    color: var(--irmap-blue);
+    font-weight: 500;
+}
+</style>
+
+<style>
+.contact-info {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: flex-start;
+}
+.contact-info i {
+    color: var(--irmap-accent);
+    margin-right: 10px;
+    margin-top: 3px;
+}
+</style>
+
+   <section id="main" class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInDown translate" data-key="main_title">
+                    Анализ и управление рисками информационной безопасности
+                </h1>
+                <p class="lead mb-4 animate__animated animate__fadeIn animate__delay-1s translate" data-key="main_subtitle">
+                    Комплексная платформа для автоматизированной оценки угроз, управления уязвимостями и защиты данных вашей организации
+                </p>
+                <div class="d-flex gap-3 animate__animated animate__fadeIn animate__delay-2s">
+                    <a href="/register" class="btn btn-irmap translate" data-key="try_free_btn">Попробовать бесплатно</a>
+                    <a href="#features" class="btn btn-outline-light translate" data-key="learn_more_btn">Узнать больше</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+    <section id="features" class="section bg-light">
+    <div class="container">
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-8 text-center">
+                <h2 class="display-5 fw-bold mb-3 translate" data-key="features_title">Возможности IRMAP</h2>
+                <p class="lead text-muted translate" data-key="features_subtitle">Инновационные инструменты для комплексного управления рисками ИБ</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card feature-card p-4 h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain fa-2x text-primary"></i>
+                    </div>
+                    <h3 class="h4 text-center mb-3 translate" data-key="feature1_title">AI-анализ рисков</h3>
+                    <p class="text-muted text-center translate" data-key="feature1_text">
+                        Наша система использует искусственный интеллект для выявления скрытых угроз и прогнозирования потенциальных атак с точностью до 95%.
+                    </p>
+                </div>
+            </div>
+             <div class="col-md-4">
+                <div class="card feature-card p-4 h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt fa-2x text-primary"></i>
+                    </div>
+                    <h3 class="h4 text-center mb-3 translate" data-key="feature2_title">Защита данных</h3>
+                    <p class="text-muted text-center translate" data-key="feature2_text">
+                        Комплексный мониторинг уязвимостей и автоматизированные рекомендации по устранению рисков конфиденциальности.
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card feature-card p-4 h-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-network fa-2x text-primary"></i>
+                    </div>
+                    <h3 class="h4 text-center mb-3 translate" data-key="feature3_title">Визуальная аналитика</h3>
+                    <p class="text-muted text-center translate" data-key="feature3_text">
+                        Интерактивные дашборды и настраиваемые отчеты для наглядного представления уровня рисков и эффективности контролей.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+    
+    <section id="solutions" class="section">
+    <div class="container">
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-8 text-center">
+                <h2 class="display-5 fw-bold mb-3 translate" data-key="solutions_title">Решения для вашего бизнеса</h2>
+                <p class="lead text-muted translate" data-key="solutions_subtitle">Адаптируем платформу под специфику вашей отрасли и масштабы компании</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="solution-box">
+                    <h3 class="h4 translate" data-key="solution1_title">Для корпораций</h3>
+                    <p class="text-muted translate" data-key="solution1_desc">Комплексное решение для крупных предприятий с распределенной инфраструктурой и требованиями регуляторов РК:</p>
+                    <ul class="text-muted">
+                        <li class="translate" data-key="solution1_item1">Интеграция с существующей ИБ-инфраструктурой</li>
+                        <li class="translate" data-key="solution1_item2">Поддержка стандартов ISO 27001, NIST</li>
+                        <li class="translate" data-key="solution1_item3">Мультитенантная архитектура</li>
+                    </ul>
+                </div>
+                
+                <div class="solution-box">
+                    <h3 class="h4 translate" data-key="solution2_title">Для финансового сектора</h3>
+                    <p class="text-muted translate" data-key="solution2_desc">Специализированные решения для банков, страховых и финтех-компаний Казахстана:</p>
+                    <ul class="text-muted">
+                        <li class="translate" data-key="solution2_item1">Соответствие PCI DSS и требованиям Нацбанка РК</li>
+                        <li class="translate" data-key="solution2_item2">Мониторинг транзакционных рисков</li>
+                        <li class="translate" data-key="solution2_item3">Защита от кибермошенничества по стандартам РК</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="solution-box">
+                    <h3 class="h4 translate" data-key="solution3_title">Для государственных организаций</h3>
+                    <p class="text-muted translate" data-key="solution3_desc">Решения для защиты критической информационной инфраструктуры.</p>
+                    <ul class="text-muted">
+                        <li class="translate" data-key="solution3_item1">Соответствие законам РК "О информационной безопасности"</li>
+                        <li class="translate" data-key="solution3_item2">Защита персональных данных согласно законодательству Казахстана</li>
+                        <li class="translate" data-key="solution3_item3">Сертификация в уполномоченных органах РК</li>
+                    </ul>
+                </div>
+                
+                <div class="solution-box">
+                    <h3 class="h4 translate" data-key="solution4_title">Для малого и среднего бизнеса</h3>
+                    <p class="text-muted translate" data-key="solution4_desc">Доступные решения с быстрым внедрением для компаний с ограниченными ИБ-ресурсами.</p>
+                    <ul class="text-muted">
+                        <li class="translate" data-key="solution4_item1">Готовые шаблоны политик ИБ на казахском и русском</li>
+                        <li class="translate" data-key="solution4_item2">Облачная версия с серверами в Казахстане</li>
+                        <li class="translate" data-key="solution4_item3">Автоматизированные отчеты для регуляторов РК</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="#contacts" class="btn btn-irmap translate" data-key="consultation_btn">Получить консультацию</a>
+        </div>
+    </div>
+</section>
+
+
+    <section id="contacts" class="section bg-light">
+    <div class="container">
+        <div class="row justify-content-center mb-5">
+            <div class="col-lg-8 text-center">
+                <h2 class="display-5 fw-bold mb-3 translate" data-key="contacts_title">Контакты</h2>
+                <p class="lead text-muted translate" data-key="contacts_subtitle">Свяжитесь с нами для демонстрации возможностей платформы</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="contact-info">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span class="translate" data-key="contacts_address">г. Алматы, просп. Аль-Фараби, 71/23, офис ФИТ</span>
+                </div>
+                <div class="contact-info">
+                    <i class="fas fa-phone"></i>
+                    <span class="translate" data-key="contacts_phone">+7 (707) 451-41-82</span>
+                </div>
+                <div class="contact-info">
+                    <i class="fas fa-envelope"></i>
+                    <span class="translate" data-key="contacts_email">info@irmap.ru</span>
+                </div>
+                <div class="contact-info">
+                    <i class="fas fa-clock"></i>
+                    <span class="translate" data-key="contacts_hours">Пн-Пт: 9:00 - 18:00</span>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+    <form id="requestForm">
+        <div class="mb-3">
+            <input type="text" class="form-control translate-ph" id="clientName" data-ph-key="form_name" placeholder="Ваше имя" required>
+        </div>
+        <div class="mb-3">
+            <input type="email" class="form-control translate-ph" id="clientEmail" data-ph-key="form_email" placeholder="Email" required>
+        </div>
+        <div class="mb-3">
+            <input type="tel" class="form-control translate-ph" id="clientPhone" data-ph-key="form_phone" placeholder="Телефон" required>
+        </div>
+        <div class="mb-3">
+            <textarea class="form-control translate-ph" id="clientMessage" data-ph-key="form_message" rows="4" placeholder="Сообщение"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 translate" data-key="form_submit">Отправить в Telegram</button>
+    </form>
+    <div id="result" class="mt-3"></div>
+</div>
+
+
+<script>
+
+function updateFormPlaceholders(lang) {
+    document.getElementById('clientName').placeholder = translations[lang]['form_name'];
+    document.getElementById('clientEmail').placeholder = translations[lang]['form_email'];
+    document.getElementById('clientPhone').placeholder = translations[lang]['form_phone'];
+    document.getElementById('clientMessage').placeholder = translations[lang]['form_message'];
+}
+
+function switchLanguage(lang) {
+    document.querySelectorAll('.translate').forEach(element => {
+        const key = element.getAttribute('data-key');
+        if (translations[lang] && translations[lang][key]) {
+            if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+                element.placeholder = translations[lang][key];
+            } else {
+                element.textContent = translations[lang][key];
+            }
+        }
+    });
+    localStorage.setItem('selectedLanguage', lang);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const savedLang = localStorage.getItem('selectedLanguage') || 'ru';
+    switchLanguage(savedLang);
+});
+</script>
+        </div>
+    </div>
+</section>
+
+
+    <script>
+document.getElementById('requestForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = '<div class="alert alert-info">Отправка...</div>';
+
+    const botToken = '7950319401:AAEMO51DmzVUEGwh8pafPubd5FPPe5wmh00'; 
+    const chatId = '901393795';  
+
+    const message = ` Новый запрос:\nИмя: ${document.getElementById('clientName').value}\nEmail: ${document.getElementById('clientEmail').value}\nТелефон: ${document.getElementById('clientPhone').value}\nСообщение: ${document.getElementById('clientMessage').value}`;
+
+    try {
+        const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`);
+        const data = await response.json();
+        
+        if (data.ok) {
+            resultDiv.innerHTML = '<div class="alert alert-success">Заявка отправлена! Мы ответим в Telegram.</div>';
+            document.getElementById('requestForm').reset();
+        } else {
+            throw new Error(data.description || 'Ошибка Telegram API');
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        resultDiv.innerHTML = `<div class="alert alert-danger">Ошибка: ${error.message}</div>`;
+    }
+});
+    </script>
+
+    <footer class="bg-dark text-white py-3">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 mb-4">
+                <h3 class="h5 mb-3 translate" data-key="footer_title">IRMAP</h3>
+                <p class="translate" data-key="footer_description">Ведущая платформа для анализа и управления рисками информационной безопасности в Казахстане и СНГ.</p>
+            </div>
+            
+            <div class="col-lg-2 col-md-4 mb-4">
+                <h3 class="h5 mb-3 translate" data-key="footer_sections">Разделы</h3>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="#main" class="text-white translate" data-key="menu_home">Главная</a></li>
+                    <li class="mb-2"><a href="#features" class="text-white translate" data-key="menu_features">Возможности</a></li>
+                    <li class="mb-2"><a href="#solutions" class="text-white translate" data-key="menu_solutions">Решения</a></li>
+                    <li class="mb-2"><a href="#contacts" class="text-white translate" data-key="menu_contacts">Контакты</a></li>
+                </ul>
+            </div>
+            
+            <div class="col-lg-3 col-md-4 mb-4">
+                <h3 class="h5 mb-3 translate" data-key="footer_resources">Ресурсы</h3>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="#" class="text-white translate" data-key="footer_docs">Документация</a></li>
+                    <li class="mb-2"><a href="#" class="text-white translate" data-key="footer_blog">Блог об ИБ</a></li>
+                    <li class="mb-2"><a href="#" class="text-white translate" data-key="footer_faq">Частые вопросы</a></li>
+                    <li class="mb-2"><a href="#" class="text-white translate" data-key="footer_policy">Политика конфиденциальности</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <hr class="my-4 bg-secondary">
+        
+        <div class="row">
+            <div class="col-md-6 text-center text-md-start">
+                <p class="mb-0 translate" data-key="footer_copyright">© 2025 IRMAP. Все права защищены.</p>
+            </div>
+            <div class="col-md-6 text-center text-md-end">
+                <p class="mb-0 translate" data-key="footer_developed">Разработано с <i class="fas fa-heart text-danger"></i> для безопасности вашего бизнеса</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+function translateFooter(lang) {
+    document.querySelectorAll('footer .translate').forEach(element => {
+        const key = element.getAttribute('data-key');
+        if (translations[lang] && translations[lang][key]) {
+            element.innerHTML = translations[lang][key]; 
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const savedLang = localStorage.getItem('selectedLanguage') || 'ru';
+    translateFooter(savedLang);
+});
+</script>
+ 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled', 'shadow');
+                navbar.classList.remove('bg-light');
+                navbar.classList.add('navbar-dark');
+            } else {
+                navbar.classList.remove('scrolled', 'shadow');
+                navbar.classList.add('bg-light');
+                navbar.classList.remove('navbar-dark');
+            }
+        });
+        
+      
+        const animateOnScroll = function() {
+            const elements = document.querySelectorAll('.feature-card, .solution-box');
+            
+            elements.forEach(element => {
+                const elementPosition = element.getBoundingClientRect().top;
+                const screenPosition = window.innerHeight / 1.2;
+                
+                if (elementPosition < screenPosition) {
+                    element.classList.add('animate__animated', 'animate__fadeInUp');
+                }
+            });
+        };
+        
+        window.addEventListener('scroll', animateOnScroll);
+        window.addEventListener('load', animateOnScroll);
+    </script>
+</body>
+</html>

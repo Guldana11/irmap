@@ -1,0 +1,21 @@
+<h2>Регистрация IT-ресурса</h2>
+<form method="POST" action="/register-asset">
+    <label>Название:</label><input name="name" required><br>
+    <label>Описание:</label><input name="description"><br>
+    <label>Критичность:</label>
+    <select name="criticality">
+        <option>Low</option>
+        <option>Medium</option>
+        <option>High</option>
+    </select><br>
+    <label>Расположение:</label><input name="location"><br>
+    <button type="submit">Сохранить</button>
+</form>
+
+<h3>Зарегистрированные ресурсы</h3>
+<table>
+    <tr><th>Название</th><th>Критичность</th><th>Описание</th><th>Локация</th></tr>
+    {{range .Assets}}
+        <tr><td>{{.Name}}</td><td>{{.Criticality}}</td><td>{{.Description}}</td><td>{{.Location}}</td></tr>
+    {{end}}
+</table>

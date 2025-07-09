@@ -1,0 +1,603 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Панель управления
+
+{% endblock %}
+    {% block custom_css %}
+    <style>
+            :root {
+                --irmap-blue: #0056b3;
+                --irmap-dark: #1a2a3a;
+                --irmap-accent: #00a8ff;
+                --irmap-light: #f8f9fa;
+                --irmap-success: #28a745;
+                --irmap-danger: #dc3545;
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: 'Roboto', Arial, sans-serif;
+            }
+
+            body {
+                background-color: #f5f7ff;
+                color: var(--irmap-dark);
+                line-height: 1.6;
+            }
+
+            header {
+                background: linear-gradient(135deg, var(--irmap-blue) 0%, var(--irmap-dark) 100%);
+                color: white;
+                padding: 0.8rem 2rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+            }
+
+            .header-right-group {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+
+            .logo {
+                font-size: 1.5rem;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                color: white;
+                text-decoration: none;
+            }
+
+            .logo-icon {
+                color: var(--irmap-accent);
+            }
+
+            .language-switcher {
+                position: relative;
+                margin-right: 1px;
+            }
+
+            .lang-btn {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                background: rgba(255,255,255,0.1);
+                border: none;
+                border-radius: 20px;
+                padding: 8px 12px;
+                color: white;
+                cursor: pointer;
+                font-size: 14px;
+            }
+
+            .lang-btn:hover {
+                background: rgba(255, 255, 255, 0.2);
+            }
+
+            .lang-dropdown {
+                position: absolute;
+                right: 0;
+                top: 100%;
+                min-width: 120px;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                list-style: none;
+                padding: 5px 0;
+                margin: 5px 0 0;
+                z-index: 1000;
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(10px);
+                transition: all 0.3s ease;
+            }
+
+            .lang-option {
+                display: block;
+                padding: 8px 15px;
+                color: #333;
+                text-decoration: none;
+                transition: all 0.2s;
+            }
+
+            .lang-option:hover {
+                background-color: #f5f5f5;
+                color: #0056b3;
+            }
+
+            .language-switcher:hover .lang-dropdown {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
+
+            .lang-option.active {
+                color: #0056b3;
+                font-weight: 500;
+                background-color: #f0f7ff;
+            }
+            .dropdown-menu {
+                list-style: none;
+                padding: 0.5rem 0;
+                margin: 0;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+                min-width: 120px;
+            }
+
+            .dropdown-item {
+                padding: 0.5rem 1rem;
+                color: var(--irmap-dark);
+                text-decoration: none;
+                display: block;
+                transition: all 0.2s;
+            }
+
+            .dropdown-item:hover {
+                background: #f1f3ff;
+            }
+
+
+
+            .dropdown-item.active {
+                color: var(--irmap-blue);
+                font-weight: 500;
+            }
+
+            .user-menu {
+                position: relative;
+            }
+
+            .user-btn {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                background: rgba(255, 255, 255, 0.15);
+                border: none;
+                border-radius: 50px;
+                padding: 0.5rem 1rem 0.5rem 0.5rem;
+                color: white;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
+            .user-btn:hover {
+                background: rgba(255, 255, 255, 0.25);
+            }
+
+            .user-avatar {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                background-color: var(--irmap-accent);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 14px;
+            }
+
+            .dropdown-content {
+                position: absolute;
+                right: 0;
+                top: 120%;
+                background: white;
+                min-width: 220px;
+                border-radius: 12px;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(-10px);
+                transition: all 0.3s ease;
+                z-index: 10;
+                overflow: hidden;
+            }
+
+            .user-menu.active .dropdown-content {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
+
+            .dropdown-item {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                padding: 0.75rem 1.5rem;
+                color: var(--irmap-dark);
+                text-decoration: none;
+                transition: all 0.2s;
+            }
+
+            .dropdown-item:hover {
+                background: #f1f3ff;
+                color: var(--irmap-blue);
+            }
+
+            .dropdown-item i {
+                width: 20px;
+                color: var(--irmap-dark);
+            }
+
+            .dropdown-divider {
+                height: 1px;
+                background: #eee;
+                margin: 0.25rem 0;
+            }
+
+            .container {
+                max-width: 1400px;
+                margin: 2rem auto;
+                padding: 0 2rem;
+            }
+
+            .dashboard-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 2rem;
+            }
+
+            .dashboard-title {
+                font-size: 1.8rem;
+                color: var(--irmap-blue);
+            }
+
+            .modules-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+                gap: 1.5rem;
+            }
+
+            .module-card {
+                background: white;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+                transition: all 0.3s ease;
+                border-left: 4px solid var(--irmap-accent);
+            }
+
+            .module-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            }
+
+            .module-header {
+                padding: 1.2rem 1.5rem;
+                background: var(--irmap-light);
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .module-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 8px;
+                background: var(--irmap-blue);
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.2rem;
+            }
+
+            .module-title {
+                font-size: 1.2rem;
+                font-weight: 600;
+            }
+
+            .module-body {
+                padding: 1.5rem;
+            }
+
+            .module-description {
+                color: #666;
+                margin-bottom: 1rem;
+                font-size: 0.95rem;
+            }
+
+            .module-stats {
+                display: flex;
+                gap: 1rem;
+                margin-top: 1rem;
+            }
+
+            .stat-item {
+                flex: 1;
+                text-align: center;
+                padding: 0.8rem;
+                background: var(--irmap-light);
+                border-radius: 8px;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: var(--irmap-blue);
+            }
+
+            .stat-label {
+                font-size: 0.8rem;
+                color: #666;
+            }
+
+            .btn {
+                display: inline-block;
+                padding: 0.7rem 1.3rem;
+                background: var(--irmap-blue);
+                color: white;
+                border-radius: 6px;
+                text-decoration: none;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                border: none;
+                cursor: pointer;
+                font-size: 0.9rem;
+            }
+
+            .btn:hover {
+                background: var(--irmap-dark);
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0, 86, 179, 0.3);
+            }
+
+            .btn-outline {
+                background: transparent;
+                border: 2px solid var(--irmap-blue);
+                color: var(--irmap-blue);
+            }
+
+            .btn-outline:hover {
+                background: var(--irmap-blue);
+                color: white;
+            }
+
+            .profile-modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 2000;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .profile-content {
+                background: white;
+                width: 90%;
+                max-width: 600px;
+                max-height: 90vh;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            }
+
+            .profile-header {
+                background: var(--irmap-blue);
+                color: white;
+                padding: 1.5rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .profile-title {
+                font-size: 1.3rem;
+                font-weight: 600;
+            }
+
+            .close-btn {
+                background: none;
+                border: none;
+                color: white;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+
+            .profile-body {
+                padding: 1.5rem;
+                overflow-y: auto;
+                max-height: 70vh;
+            }
+
+            .profile-field {
+                margin-bottom: 1.2rem;
+            }
+
+            .profile-field label {
+                display: block;
+                margin-bottom: 0.5rem;
+                font-weight: 500;
+                color: var(--irmap-dark);
+            }
+
+            .profile-field input, .profile-field select {
+                width: 100%;
+                padding: 0.8rem;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                font-size: 1rem;
+            }
+
+            .profile-field input:read-only {
+                background: #f5f5f5;
+                border-color: #eee;
+            }
+
+            .profile-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 1rem;
+                margin-top: 1.5rem;
+                padding-top: 1.5rem;
+                border-top: 1px solid #eee;
+            }
+
+            footer {
+                background: var(--irmap-dark);
+                color: white;
+                text-align: center;
+                padding: 1.5rem;
+                margin-top: 3rem;
+            }
+
+            @media (max-width: 768px) {
+                .modules-grid {
+                    grid-template-columns: 1fr;
+                }
+                
+                .dashboard-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 1rem;
+                }
+            }
+    </style>
+    {% endblock %}
+
+    {% block content %}
+
+<div class="container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title lang-text" data-ru="Панель управления IRMAP" data-kz="IRMAP басқару панелі">Панель управления IRMAP</h1>
+                    </div>
+
+        <div class="modules-grid">
+           <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <h3 class="module-title lang-text" data-ru="Идентификация активов" data-kz="Активтерді идентификациялау">Идентификация активов</h3>
+                </div>
+                <div class="module-body">
+                    <p class="module-description lang-text" 
+                       data-ru="Регистрация IT-ресурсов и их критичности. Интеграция с CMDB и инвентаризационными системами."
+                       data-kz="IT-ресурстарды тіркеу және олардың маңыздылық деңгейі. CMDB және инвентаризациялық жүйелермен интеграция.">
+                        Регистрация IT-ресурсов и их критичности. Интеграция с CMDB и инвентаризационными системами.
+                    </p>
+                    <div class="module-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">{{ total_assets }}</div>
+                            <div class="stat-label lang-text" data-ru="Активов" data-kz="Активтер">Активов</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ high_critical_count }}</div>
+                            <div class="stat-label lang-text" data-ru="Критичных" data-kz="Критикалық">Критичных</div>
+                        </div>
+                    </div>
+                    <a href="/assets" class="btn btn-outline" style="margin-top: 1rem;">
+                        <i class="fas fa-arrow-right"></i> <span class="lang-text" data-ru="Перейти" data-kz="Өту">Перейти</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3 class="module-title lang-text" data-ru="Оценка рисков" data-kz="Тәуекелді бағалау">Оценка рисков</h3>
+                </div>
+                <div class="module-body">
+                    <p class="module-description lang-text" 
+                       data-ru="Анализ рисков по стандартам ISO/IEC 27005, NIST, OCTAVE. Качественный и количественный анализ."
+                       data-kz="ISO/IEC 27005, NIST, OCTAVE стандарттары бойынша тәуекелді талдау. Сапалы және сандық талдау.">
+                        Анализ рисков по стандартам ISO/IEC 27005, NIST, OCTAVE. Качественный и количественный анализ.
+                    </p>
+                    <div class="module-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">76</div>
+                            <div class="stat-label lang-text" data-ru="Рисков" data-kz="Тәуекелдер">Рисков</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">15</div>
+                            <div class="stat-label lang-text" data-ru="Высоких" data-kz="Жоғары">Высоких</div>
+                        </div>
+                    </div>
+                    <a href="/risks" class="btn btn-outline" style="margin-top: 1rem;">
+                        <i class="fas fa-arrow-right"></i> <span class="lang-text" data-ru="Перейти" data-kz="Өту">Перейти</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon" style="background: var(--irmap-success);">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="module-title lang-text" data-ru="ИИ-анализ угроз" data-kz="ЖТ-қауіптерді талдау">ИИ-анализ угроз</h3>
+                </div>
+                <div class="module-body">
+                    <p class="module-description lang-text" 
+                       data-ru="Машинное обучение для анализа событий безопасности и прогнозирования инцидентов."
+                       data-kz="Қауіпсіздік оқиғаларын талдауға және инциденттерді болжауға арналған машиналық оқыту.">
+                        Машинное обучение для анализа событий безопасности и прогнозирования инцидентов.
+                    </p>
+                    <div class="module-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">94%</div>
+                            <div class="stat-label lang-text" data-ru="Точность" data-kz="Дәлдік">Точность</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">3</div>
+                            <div class="stat-label lang-text" data-ru="Угрозы" data-kz="Қауіптер">Угрозы</div>
+                        </div>
+                    </div>
+                    <a href="/ai" class="btn btn-outline" style="margin-top: 1rem;">
+                        <i class="fas fa-arrow-right"></i> <span class="lang-text" data-ru="Перейти" data-kz="Өту">Перейти</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon">
+                        <i class="fas fa-file-export"></i>
+                    </div>
+                    <h3 class="module-title lang-text" data-ru="Генерация отчетов" data-kz="Есептерді құру">Генерация отчетов</h3>
+                </div>
+                <div class="module-body">
+                    <p class="module-description lang-text" 
+                       data-ru="Формирование отчетов для аудиторов и регуляторов. Экспорт в PDF, Excel, JSON."
+                       data-kz="Аудиторлар мен реттеушілер үшін есептерді құрастыру. PDF, Excel, JSON форматында экспорттау.">
+                        Формирование отчетов для аудиторов и регуляторов. Экспорт в PDF, Excel, JSON.
+                    </p>
+                    <div class="module-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">24</div>
+                            <div class="stat-label lang-text" data-ru="Шаблона" data-kz="Үлгілер">Шаблона</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">7</div>
+                            <div class="stat-label lang-text" data-ru="За неделю" data-kz="Апталық">За неделю</div>
+                        </div>
+                    </div>
+                    <a href="/reports" class="btn btn-outline" style="margin-top: 1rem;">
+                        <i class="fas fa-arrow-right"></i> <span class="lang-text" data-ru="Перейти" data-kz="Өту">Перейти</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% endblock %}
+
+    {% block scripts %}
+
+{% endblock %}

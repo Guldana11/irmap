@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title class="translate" data-key="gauth_title">Настройка Google Authenticator | IRMAP</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .totp-container {
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .qr-code {
+            margin: 25px auto;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .error {
+            color: #dc3545;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        .form-control {
+            height: 48px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 18px;
+            letter-spacing: 2px;
+        }
+        .btn-primary {
+            background-color: #0056b3;
+            border: none;
+            padding: 12px 0;
+            width: 100%;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        .language-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .language-switcher a {
+            color: #0056b3;
+            text-decoration: none;
+            margin-left: 15px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .language-switcher a.active {
+            border-bottom: 2px solid #0056b3;
+        }
+        .instructions {
+            margin: 20px 0;
+            color: #666;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="language-switcher">
+        <a href="#" class="translate active" data-lang="ru" data-key="lang_ru">Рус</a>
+        <a href="#" class="translate" data-lang="kz" data-key="lang_kz">Қаз</a>
+    </div>
+
+    <div class="totp-container">
+        <h2 class="translate" data-key="gauth_header">Настройка двухфакторной аутентификации</h2>
+        <p class="instructions translate" data-key="gauth_instruction1">Добавьте аккаунт в Google Authenticator или аналогичное приложение</p>
+
+        <div class="qr-code">
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ qr }}" alt="QR Code" class="img-fluid">
+        </div>
+
+        <p class="instructions translate" data-key="gauth_instruction2">Отсканируйте QR-код или введите код вручную:</p>
+        <p class="text-muted mb-4"><code>{{ secret }}</code></p>
+
+        {% if error %}
+    <p class="error translate" data-key="gauth_error">{{ error }}</p>
+{% endif %}
+
+        <form method="post" action="/verify/{{ email }}">
+            <label for="code" class="translate" data-key="gauth_code_label">Введите 6-значный код из приложения:</label>
+            <input type="text" name="code" id="code" class="form-control" 
+                   placeholder="123456" maxlength="6" pattern="\d{6}" required
+                   data-translate="gauth_code_placeholder">
+            <button type="submit" class="btn btn-primary translate" data-key="gauth_confirm_btn">Подтвердить</button>
+        </form>
+    </div>
+
+    <script>
+    const translations = {
+        ru: {
+            gauth_title: "Настройка Google Authenticator | IRMAP",
+            gauth_header: "Настройка двухфакторной аутентификации",
+            gauth_instruction1: "Добавьте аккаунт в Google Authenticator или аналогичное приложение",
+            gauth_instruction2: "Отсканируйте QR-код или введите код вручную:",
+            gauth_code_label: "Введите 6-значный код из приложения:",
+            gauth_code_placeholder: "123456",
+            gauth_confirm_btn: "Подтвердить",
+            gauth_error: "Неверный код подтверждения",
+            lang_ru: "Рус",
+            lang_kz: "Қаз"
+        },
+        kz: {
+            gauth_title: "Google Authenticator баптау | IRMAP",
+            gauth_header: "Екі факторлы аутентификацияны баптау",
+            gauth_instruction1: "Google Authenticator немесе ұқсас қосымшаға аккаунтыңызды қосыңыз",
+            gauth_instruction2: "QR-кодты сканерлеңіз немесе кодты қолмен енгізіңіз:",
+            gauth_code_label: "Қосымшадан 6 таңбалы кодты енгізіңіз:",
+            gauth_code_placeholder: "123456",
+            gauth_confirm_btn: "Растау",
+            gauth_error: "Растау коды қате",
+            lang_ru: "Рус",
+            lang_kz: "Қаз"
+        }
+    };
+
+    function switchLanguage(lang) {
+        document.querySelectorAll('.translate').forEach(element => {
+            const key = element.getAttribute('data-key');
+            if (translations[lang] && translations[lang][key]) {
+                element.textContent = translations[lang][key];
+            }
+        });
+        
+        const codeInput = document.getElementById('code');
+        if (codeInput && translations[lang] && translations[lang]['gauth_code_placeholder']) {
+            codeInput.placeholder = translations[lang]['gauth_code_placeholder'];
+        }
+        
+        document.querySelectorAll('.language-switcher a').forEach(link => {
+            link.classList.toggle('active', link.getAttribute('data-lang') === lang);
+        });
+        
+        localStorage.setItem('selectedLanguage', lang);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedLang = localStorage.getItem('selectedLanguage') || 'ru';
+        switchLanguage(savedLang);
+        
+        document.querySelectorAll('.language-switcher a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const lang = this.getAttribute('data-lang');
+                switchLanguage(lang);
+            });
+        });
+
+        document.getElementById('code')?.focus();
+    });
+    </script>
+</body>
+</html>

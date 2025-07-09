@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRMAP | {% block title %}{% endblock %}</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --irmap-blue: #0056b3;
+            --irmap-dark: #1a2a3a;
+            --irmap-accent: #00a8ff;
+            --irmap-light: #f8f9fa;
+            --irmap-success: #28a745;
+            --irmap-danger: #dc3545;
+        }
+
+        body {
+            background-color: #f5f7ff;
+            color: var(--irmap-dark);
+            line-height: 1.6;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--irmap-blue) 0%, var(--irmap-dark) 100%);
+            color: white;
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            color: var(--irmap-accent);
+        }
+
+        .user-menu {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            border-radius: 50px;
+            padding: 0.5rem 1rem 0.5rem 0.5rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .user-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--irmap-accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .dropdown-content {
+            position: absolute;
+            right: 0;
+            top: 120%;
+            background: white;
+            min-width: 220px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        .user-menu.active .dropdown-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: var(--irmap-dark);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: #f1f3ff;
+            color: var(--irmap-blue);
+        }
+
+        .dropdown-item i {
+            width: 20px;
+            color: var(--irmap-dark);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #eee;
+            margin: 0.25rem 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            color: var(--irmap-blue);
+            font-size: 1.8rem;
+        }
+
+        .profile-modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 2000;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .profile-content {
+                background: white;
+                width: 90%;
+                max-width: 600px;
+                max-height: 90vh;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            }
+
+            .profile-header {
+                background: var(--irmap-blue);
+                color: white;
+                padding: 1.5rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .profile-title {
+                font-size: 1.3rem;
+                font-weight: 600;
+            }
+
+            .close-btn {
+                background: none;
+                border: none;
+                color: white;
+                font-size: 1.5rem;
+                cursor: pointer;
+            }
+
+            .profile-body {
+                padding: 1.5rem;
+                overflow-y: auto;
+                max-height: 70vh;
+            }
+
+            .profile-field {
+                margin-bottom: 1.2rem;
+            }
+
+            .profile-field label {
+                display: block;
+                margin-bottom: 0.5rem;
+                font-weight: 500;
+                color: var(--irmap-dark);
+            }
+
+            .profile-field input, .profile-field select {
+                width: 100%;
+                padding: 0.8rem;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                font-size: 1rem;
+            }
+
+            .profile-field input:read-only {
+                background: #f5f5f5;
+                border-color: #eee;
+            }
+
+            .profile-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: 1rem;
+                margin-top: 1.5rem;
+                padding-top: 1.5rem;
+                border-top: 1px solid #eee;
+            }
+        footer {
+            background: var(--irmap-dark);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 3rem;
+        }
+        
+        .language-switcher {
+            display: flex;
+            gap: 0.5rem;
+            margin-right: 1rem;
+        }
+        
+        .language-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .language-btn:hover, .language-btn.active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+    {% block custom_css %}{% endblock %}
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">
+            <i class="fas fa-shield-alt logo-icon"></i>
+            IRMAP
+        </a>
+        
+        <div class="user-menu" id="userMenu">
+            <div class="language-switcher">
+                <button class="language-btn active" data-lang="ru">Рус</button>
+                <button class="language-btn" data-lang="kz">Қаз</button>
+            </div>
+            
+           {% set uname = user.username | string if user and user.username else 'User' %}
+
+                <button class="user-btn" id="userBtn">
+                    <div class="user-avatar" id="userAvatar">
+                        {{ uname[0]|upper }}
+                    </div>
+                    <span id="userEmail">
+                        {{ uname }}
+                    </span>
+                    <i class="fas fa-caret-down"></i>
+                </button>
+
+
+            <div class="dropdown-content">
+                <a href="#" class="dropdown-item" id="profileLink">
+                    <i class="fas fa-user"></i>
+                    <span class="lang-text" data-ru="Личный кабинет" data-kz="Жеке кабинет">Личный кабинет</span>
+                </a>
+                <a href="#" class="dropdown-item" id="settingsLink">
+                    <i class="fas fa-cog"></i>
+                    <span class="lang-text" data-ru="Настройки" data-kz="Баптаулар">Настройки</span>
+                </a>
+                <div class="dropdown-divider"></div>
+                <a href="#" class="dropdown-item" id="logoutLink">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="lang-text" data-ru="Выйти" data-kz="Шығу">Выйти</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+          
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Модальное окно профиля -->
+    <div class="profile-modal" id="profileModal">
+        <div class="profile-content">
+            <div class="profile-header">
+                <h3 class="profile-title">
+                    <span class="lang-text" data-ru="Личный кабинет" data-kz="Жеке кабинет">Личный кабинет</span>
+                </h3>
+                <button class="close-btn" id="closeProfile">&times;</button>
+            </div>
+            
+            <div class="profile-body">
+                <form id="profileForm">
+                    <div class="profile-field">
+                        <label>
+                            <span class="lang-text" data-ru="Email" data-kz="Электрондық пошта">Email</span>*
+                        </label>
+                        <input type="email" id="profileEmail" name="email" required readonly>
+                    </div>
+                    
+                    <div class="profile-field">
+                        <label>
+                            <span class="lang-text" data-ru="ФИО" data-kz="Аты-жөні">ФИО</span>
+                        </label>
+                        <input type="text" id="profileName" name="full_name" required
+                               placeholder="Введите ваше полное имя"
+                               data-placeholder-ru="Введите ваше полное имя"
+                               data-placeholder-kz="Аты-жөніңізді енгізіңіз">
+                    </div>
+                    
+                    <div class="profile-field">
+                        <label>
+                            <span class="lang-text" data-ru="Номер телефона" data-kz="Телефон нөмірі">Номер телефона</span>
+                        </label>
+                        <input type="tel" id="profilePhone" name="phone" required 
+                               pattern="\+7\s?[0-9]{3}\s?[0-9]{3}\s?[0-9]{2}\s?[0-9]{2}"
+                               placeholder="+7 XXX XXX XX XX"
+                               data-placeholder-ru="+7 XXX XXX XX XX"
+                               data-placeholder-kz="+7 XXX XXX XX XX">
+                    </div>
+                    
+                    <div class="profile-field">
+                        <label>
+                            <span class="lang-text" data-ru="Должность" data-kz="Қызметі">Должность</span>
+                        </label>
+                        <input type="text" id="profilePosition" name="position"
+                               placeholder="Ваша должность"
+                               data-placeholder-ru="Ваша должность"
+                               data-placeholder-kz="Қызметіңіз">
+                    </div>
+                    
+                    <div class="profile-field">
+                        <label>
+                            <span class="lang-text" data-ru="Дата регистрации" data-kz="Тіркеу күні">Дата регистрации</span>
+                        </label>
+                        <input type="text" id="profileRegDate" readonly>
+                    </div>
+                    
+                    <div class="profile-actions">
+                        <button type="button" id="cancelProfile">
+                            <span class="lang-text" data-ru="Отмена" data-kz="Бас тарту">Отмена</span>
+                        </button>
+                        <button type="submit" id="saveProfile">
+                            <span class="lang-text" data-ru="Сохранить" data-kz="Сақтау">Сохранить</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>
+            <span class="lang-text" data-ru="&copy; 2025 IRMAP. Все права защищены." 
+                  data-kz="&copy; 2025 IRMAP. Барлық құқықтар қорғалған.">
+                &copy; 2025 IRMAP. Все права защищены.
+            </span>
+        </p>
+        <p>
+            <span class="lang-text" 
+                  data-ru="Казахстан, г. Алматы, просп. Аль-Фараби, 71/23, офис ФИТ"
+                  data-kz="Қазақстан, Алматы қ., Әл-Фараби даңғылы, 71/23, ФИТ кеңсесі">
+                Казахстан, г. Алматы, просп. Аль-Фараби, 71/23, офис ФИТ
+            </span>
+        </p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+    // Language switching functionality
+    function switchLanguage(lang) {
+        // Set cookie for language preference
+        document.cookie = `lang=${lang}; path=/; max-age=2592000`;
+        
+        // Update active button
+        document.querySelectorAll('.language-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.lang === lang);
+        });
+        
+        // Switch text content
+        document.querySelectorAll('.lang-text').forEach(el => {
+            if (el.dataset[lang]) {
+                el.textContent = el.dataset[lang];
+            }
+        });
+        
+        
+            document.querySelectorAll('input, textarea').forEach(input => {
+                const value = input.getAttribute(`data-placeholder-${lang}`);
+                if (value) {
+                    input.placeholder = value;
+                }
+            });
+            ;
+        
+        // Save language preference
+        localStorage.setItem('preferredLanguage', lang);
+    }
+    
+    // Initialize language
+    function initLanguage() {
+        // Check for saved language preference
+        const savedLang = localStorage.getItem('preferredLanguage');
+        const cookieLang = document.cookie.replace(/(?:(?:^|.*;\s*)lang\s*=\s*([^;]*).*$)|^.*$/, '$1');
+        const browserLang = navigator.language.startsWith('kk') ? 'kz' : 'ru';
+        
+        // Priority: saved > cookie > browser > default (ru)
+        const lang = savedLang || cookieLang || browserLang || 'ru';
+        switchLanguage(lang);
+    }
+    
+    // Event listeners for language buttons
+    document.querySelectorAll('.language-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            switchLanguage(this.dataset.lang);
+        });
+    });
+    
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        initLanguage();
+        
+        // Additional initialization code...
+        const userEmailElement = document.getElementById('userEmail');
+        if (userEmailElement) {
+            localStorage.setItem('currentUserEmail', userEmailElement.textContent.trim());
+        }
+    });
+
+    // User menu functionality
+    const userMenu = document.getElementById('userMenu');
+    const userBtn = document.getElementById('userBtn');
+    
+    if (userBtn && userMenu) {
+        userBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            userMenu.classList.toggle('active');
+        });
+        
+        document.addEventListener('click', function() {
+            userMenu.classList.remove('active');
+        });
+    }
+
+    // Profile modal functionality
+    async function loadProfileData() {
+        try {
+            const response = await fetch("/profile/data");
+            if (!response.ok) throw new Error("Ошибка загрузки профиля");
+            const data = await response.json();
+            
+            document.getElementById("profileEmail").value = data.email;
+            document.getElementById("profileName").value = data.full_name || '';
+            document.getElementById("profilePhone").value = data.phone || '';
+            document.getElementById("profilePosition").value = data.position || '';
+            document.getElementById("profileRegDate").value = data.created_at || '';
+        } catch (error) {
+            console.error("Ошибка:", error);
+            const lang = localStorage.getItem('preferredLanguage') || 'ru';
+            const message = lang === 'kz' 
+                ? "Профиль деректерін жүктеу мүмкін болмады" 
+                : "Не удалось загрузить данные профиля";
+            alert(message);
+        }
+    }
+
+    // Profile modal event listeners
+    const profileLink = document.getElementById('profileLink');
+    if (profileLink) {
+        profileLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('profileModal').style.display = 'flex';
+            loadProfileData();
+        });
+    }
+
+    const closeProfile = document.getElementById('closeProfile');
+    if (closeProfile) {
+        closeProfile.addEventListener('click', function() {
+            document.getElementById('profileModal').style.display = 'none';
+        });
+    }
+
+    const cancelProfile = document.getElementById('cancelProfile');
+    if (cancelProfile) {
+        cancelProfile.addEventListener('click', function() {
+            document.getElementById('profileModal').style.display = 'none';
+        });
+    }
+
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const formData = new FormData();
+                formData.append('full_name', document.getElementById('profileName').value);
+                formData.append('phone', document.getElementById('profilePhone').value);
+                formData.append('position', document.getElementById('profilePosition').value);
+                
+                const response = await fetch("/profile/update", {
+                    method: "POST",
+                    body: formData
+                });
+                
+                if (!response.ok) throw new Error("Ошибка сохранения");
+                
+                const result = await response.json();
+                const lang = localStorage.getItem('preferredLanguage') || 'ru';
+                const message = lang === 'kz' 
+                    ? "Профиль сәтті жаңартылды" 
+                    : "Профиль успешно обновлен";
+                alert(result.message || message);
+                
+                document.getElementById('profileModal').style.display = 'none';
+            } catch (error) {
+                console.error("Ошибка:", error);
+                const lang = localStorage.getItem('preferredLanguage') || 'ru';
+                const message = lang === 'kz' 
+                    ? "Профильді сақтау мүмкін болмады" 
+                    : "Не удалось сохранить профиль";
+                alert(message);
+            }
+        });
+    }
+
+    // Logout functionality
+    const logoutLink = document.getElementById('logoutLink');
+    if (logoutLink) {
+        logoutLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const lang = localStorage.getItem('preferredLanguage') || 'ru';
+            const confirmMessage = lang === 'kz' 
+                ? 'Жүйеден шығуға сенімдісіз бе?' 
+                : 'Вы уверены, что хотите выйти из системы?';
+                
+            if(confirm(confirmMessage)) {
+                window.location.href = '/logout';
+            }
+        });
+    }
+</script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

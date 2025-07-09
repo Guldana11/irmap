@@ -1,0 +1,1157 @@
+{% extends "base.html" %}
+
+{% block title %}IT-активы{% endblock %}
+
+{% block content %}
+<div class="assets-container">
+    <div class="assets-header">
+        <h1 class="lang-text" data-ru="Список IT-активов" data-kz="IT-ресурстар тізімі">
+            <i class="fas fa-server"></i> Список IT-активов
+        </h1>
+        <div class="assets-actions">
+            <form method="post" action="/assets/import">
+                <button type="submit" class="btn btn-import lang-text"
+                        data-ru="Импорт из GLPI" data-kz="GLPI жүйесінен импорттау">
+                    <i class="fas fa-download"></i> Импорт из GLPI
+                </button>
+            </form>
+            <button class="btn btn-add lang-text" data-bs-toggle="modal"
+                    data-bs-target="#assetModal" data-mode="add"
+                    data-ru="Добавить актив" data-kz="Жаңа актив қосу">
+                <i class="fas fa-plus"></i> Добавить актив
+            </button>
+        </div>
+    </div>
+
+   <div class="modal fade" id="assetModal" tabindex="-1" aria-labelledby="assetModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <form method="post" id="assetForm">
+                <input type="hidden" name="id" id="assetId">
+                <input type="hidden" name="mode" id="formMode">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="assetModalLabel"><i class="fas fa-plus-circle"></i> <span class="lang-text" data-ru="Добавить новый актив" data-kz="Жаңа актив қосу"></span></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label lang-text" data-ru="Название*" data-kz="Атауы*"></label>
+                                    <input type="text" class="form-control" name="name" id="assetName" required 
+                                        placeholder="Например: WEB-сервер" 
+                                        data-placeholder-ru="Например: WEB-сервер" 
+                                        data-placeholder-kz="Мысалы: WEB-сервер">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="type" class="form-label lang-text" data-ru="Тип*" data-kz="Түрі*"></label>
+                                    <select class="form-select" name="type" id="assetType" required>
+                                        <option value="Server" class="lang-text" data-ru="Сервер" data-kz="Сервер"></option>
+                                        <option value="Workstation" class="lang-text" data-ru="Рабочая станция" data-kz="Жұмыс станциясы"></option>
+                                        <option value="Network" class="lang-text" data-ru="Сетевое оборудование" data-kz="Желілік жабдық"></option>
+                                        <option value="Printer" class="lang-text" data-ru="Принтер/МФУ" data-kz="Принтер/МФУ"></option>
+                                        <option value="Computer" class="lang-text" data-ru="Компьютер" data-kz="Компьютер"></option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="inventory_number" class="form-label lang-text" data-ru="Инвентарный номер" data-kz="Инвентарлық нөмір"></label>
+                                    <input type="text" class="form-control" name="inventory_number" id="assetInventory" 
+                                        placeholder="Номер из системы учета" 
+                                        data-placeholder-ru="Номер из системы учета" 
+                                        data-placeholder-kz="Есеп жүйесіндегі нөмір">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="status" class="form-label lang-text" data-ru="Статус*" data-kz="Статусы*"></label>
+                                    <select class="form-select" name="status" id="assetStatus" required>
+                                        <option value="Active" selected class="lang-text" data-ru="Активный" data-kz="Белсенді"></option>
+                                        <option value="Inactive" class="lang-text" data-ru="Неактивный" data-kz="Белсенді емес"></option>
+                                        <option value="Maintenance" class="lang-text" data-ru="На обслуживании" data-kz="Қызмет көрсетуде"></option>
+                                        <option value="In_operation" class="lang-text" data-ru="В эксплуатации" data-kz="Пайдалануда"></option>
+                                        <option value="Under_repair" class="lang-text" data-ru="В ремонте" data-kz="Жөндеуде"></option>
+                                        <option value="In_reserve" class="lang-text" data-ru="В резерве" data-kz="Резервте"></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="criticality" class="form-label lang-text" data-ru="Критичность*" data-kz="Деңгейі*"></label>
+                                    <select class="form-select" name="criticality" id="assetCriticality" required>
+                                        <option value="High" class="lang-text" data-ru="Высокая" data-kz="Жоғары"></option>
+                                        <option value="Medium" selected class="lang-text" data-ru="Средняя" data-kz="Орташа"></option>
+                                        <option value="Low" class="lang-text" data-ru="Низкая" data-kz="Төмен"></option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="department" class="form-label lang-text" data-ru="Подразделение" data-kz="Бөлім"></label>
+                                    <select class="form-select" name="department" id="assetDepartment">
+                                        <option value="" class="lang-text" data-ru="Не указано" data-kz="Көрсетілмеген"></option>
+                                        <option class="lang-text" data-ru="IT отдел" data-kz="IT бөлімі"></option>
+                                        <option class="lang-text" data-ru="Бухгалтерия" data-kz="Бухгалтерия"></option>
+                                        <option class="lang-text" data-ru="Отдел продаж" data-kz="Сату бөлімі"></option>
+                                        <option class="lang-text" data-ru="Маркетинг" data-kz="Маркетинг"></option>
+                                        <option class="lang-text" data-ru="Финансовый отдел" data-kz="Қаржы бөлімі"></option>
+                                        <option class="lang-text" data-ru="Администрация" data-kz="Әкімшілік"></option>	
+                                        <option class="lang-text" data-ru="Служба поддержка" data-kz="Қолдау қызметі"></option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="owner" class="form-label lang-text" data-ru="Ответственный" data-kz="Жауапты"></label>
+                                    <input type="text" class="form-control" name="owner" id="assetOwner" 
+                                        placeholder="ФИО ответственного" 
+                                        data-placeholder-ru="ФИО ответственного" 
+                                        data-placeholder-kz="Жауаптының аты-жөні">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="source" class="form-label lang-text" data-ru="Источник*" data-kz="Дереккөз*"></label>
+                                    <select class="form-select" name="source" id="assetSource" required>
+                                        <option value="Manual" selected class="lang-text" data-ru="Ручной ввод" data-kz="Қолмен енгізу"></option>
+                                        <option value="GLPI" class="lang-text" data-ru="GLPI" data-kz="GLPI"></option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label lang-text" data-ru="Описание" data-kz="Сипаттама"></label>
+                            <textarea class="form-control" name="description" id="assetDescription" rows="2" data-ru-placeholder="Дополнительная информация об активе" data-kz-placeholder="Актив туралы қосымша ақпарат"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-times"></i> <span class="lang-text" data-ru="Отмена" data-kz="Болдырмау"></span></button>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> <span class="lang-text" data-ru="Сохранить" data-kz="Сақтау"></span></button>
+                    </div>
+                </div>
+            </form>
+        </div>
+   </div>
+
+    <div class="assets-filters">
+        <input type="text" id="searchInput" 
+        class="search-input"
+        data-placeholder-ru="Поиск по названию..." 
+        data-placeholder-kz="Атауы бойынша іздеу..."
+        placeholder="Поиск по названию...">
+                
+                <select id="typeFilter" class="filter-select">
+                    <option value="" class="lang-text" data-ru="Все типы" data-kz="Барлық түрлер"></option>
+                    <option class="lang-text">Server</option>
+                    <option class="lang-text">Monitor</option>
+                    <option class="lang-text">Network</option>
+                    <option class="lang-text">Computer</option>
+                </select>
+                
+                <select id="criticalityFilter" class="filter-select">
+                    <option value="" class="lang-text" data-ru="Все критичности" data-kz="Барлық критикалылық"></option>
+                    <option class="lang-text">High</option>
+                    <option class="lang-text">Medium</option>
+                    <option class="lang-text">Low</option>
+                </select>
+            </div>
+
+    <div class="table-responsive">
+    <table class="assets-table">
+        <thead>
+            <tr>
+                <th data-sort="name" class="lang-text" data-ru="Название" data-kz="Атауы"><span class="lang-text" data-ru="Название" data-kz="Атауы"></span> <i class="fas fa-sort"></i></th>
+                <th data-sort="type" class="lang-text" data-ru="Тип" data-kz="Түрі"><span class="lang-text" data-ru="Тип" data-kz="Түрі"></span> <i class="fas fa-sort"></i></th>
+                <th data-sort="criticality" class="lang-text" data-ru="Критичность" data-kz="Критикалылық"><span class="lang-text" data-ru="Критичность" data-kz="Критикалылық"></span></th>
+                <th data-sort="department" class="lang-text" data-ru="Подразделение" data-kz="Бөлім"><span class="lang-text" data-ru="Подразделение" data-kz="Бөлім"></span></th>
+                <th data-sort="owner" class="lang-text" data-ru="Владелец" data-kz="Иесі"><span class="lang-text" data-ru="Владелец" data-kz="Иесі"></span></th>
+                <th data-sort="status" class="lang-text" data-ru="Статус" data-kz="Статусы"><span class="lang-text" data-ru="Статус" data-kz="Статусы"></span></th>
+                <th data-sort="source" class="lang-text" data-ru="Источник" data-kz="Көзі"><span class="lang-text" data-ru="Источник" data-kz="Көзі"></span></th>
+                <th data-sort="created" class="lang-text" data-ru="Создан" data-kz="Құрылған"><span class="lang-text" data-ru="Создан" data-kz="Құрылған"></span></th>
+                <th class="lang-text" data-ru="Действия" data-kz="Әрекеттер"><span class="lang-text" data-ru="Действия" data-kz="Әрекеттер"></span></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for asset in assets %}
+            <tr data-id="{{ asset.id }}" 
+    data-name="{{ asset.name|lower }}" 
+    data-type="{{ asset.type }}" 
+    data-criticality="{{ asset.criticality }}"
+    data-department="{{ asset.department }}"
+    data-owner="{{ asset.owner }}"
+    data-status="{{ asset.status }}"
+    data-source="{{ asset.source }}"
+    data-created="{{ asset.created_at.strftime('%Y-%m-%d') if asset.created_at else '-' }}"
+    data-description="{{ asset.description }}"
+    data-inventory="{{ asset.inventory_number }}">
+    <td>
+    <i class="fas 
+      {% if asset.type == 'Server' %}fa-server
+      {% elif asset.type == 'Workstation' %}fa-desktop
+      {% elif asset.type == 'Network' %}fa-network-wired
+      {% elif asset.type == 'Computer'%}fa-computer
+      {% else %}fa-hdd{% endif %}"></i>
+    {{ asset.name }}
+</td>
+<td class="lang-text" data-ru="{{ asset.type }}" data-kz="{{ asset.type }}">
+    {{ asset.type }}
+</td>
+    <td>
+        <span class="badge 
+            {% if asset.criticality == 'High' %}bg-danger
+            {% elif asset.criticality == 'Medium' %}bg-warning
+            {% else %}bg-success{% endif %}">
+            {{ asset.criticality }}
+        </span>
+    </td>
+    <td class="lang-text" data-ru="{{ asset.department or '-' }}" data-kz="
+    {% if asset.department == 'IT отдел' %}IT бөлімі
+    {% elif asset.department == 'Бухгалтерия' %}Есеп бөлімі
+    {% elif asset.department == 'Отдел продаж' %}Сату бөлімі
+    {% elif asset.department == 'Маркетинг' %}Маркетинг
+    {% elif asset.department == 'Финансовый отдел' %}Қаржы бөлімі
+    {% elif asset.department == 'Администрация' %}Әкімшілік
+    {% elif asset.department == 'Поддержка' %}Қолдау қызметі
+    {% else %}-{% endif %}">
+    {{ asset.department or '-' }}
+</td>
+    <td>{{ asset.owner or '-' }}</td>
+    <td>
+        <span class="badge 
+            {% if asset.status == 'Active' %}bg-success
+            {% elif asset.status == 'Inactive' %}bg-secondary
+            {% elif asset.status == 'Maintenance' %}bg-warning
+            {% elif asset.status == 'In_operation' %}bg-primary
+            {% elif asset.status == 'Under_repair' %}bg-danger
+            {% elif asset.status == 'In_reserve' %}bg-info
+            {% else %}bg-light text-dark{% endif %}">
+            {{ asset.status }}
+        </span>
+    </td>
+    <td class="lang-text" data-ru="{{ asset.source }}" data-kz="{% if asset.source == 'Manual' %}Қолмен{% else %}{{ asset.source }}{% endif %}">
+        {{ asset.source }}
+    </td>
+    <td>{{ asset.created_at.strftime("%d.%m.%Y") if asset.created_at else "-" }}</td>
+    <td class="actions">
+        <button class="btn btn-sm btn-outline-primary btn-edit"
+                data-bs-toggle="modal"
+                data-bs-target="#assetModal"
+                data-mode="edit">
+            <i class="fas fa-edit" title="" data-ru-title="Редактировать" data-kz-title="Өңдеу"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-danger btn-delete">
+            <i class="fas fa-trash" title="" data-ru-title="Удалить" data-kz-title="Жою"></i>
+        </button>
+    </td>
+</tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+    <div class="assets-pagination">
+        {% if total_assets > 0 %}
+        <span class="lang-text" 
+            data-ru="Показано {{ assets|length }} из {{ total_assets }}" 
+            data-kz="{{ assets|length }}/{{ total_assets }} көрсетілді">
+            Показано {{ assets|length }} из {{ total_assets }}
+        </span>
+        <div class="pagination-controls">
+            {% if page > 1 %}
+            <a href="?page={{ page-1 }}" class="btn-pagination"><i class="fas fa-chevron-left"></i></a>
+            {% endif %}
+            
+            {% for p in range(1, total_pages+1) %}
+            <a href="?page={{ p }}" class="btn-pagination {% if p == page %}active{% endif %}">{{ p }}</a>
+            {% endfor %}
+            
+            {% if page < total_pages %}
+            <a href="?page={{ page+1 }}" class="btn-pagination"><i class="fas fa-chevron-right"></i></a>
+            {% endif %}
+        </div>
+        {% else %}
+        <span class="lang-text" 
+            data-ru="Нет данных для отображения" 
+            data-kz="Көрсету үшін деректер жоқ">
+            Нет данных для отображения
+        </span>
+        {% endif %}
+    </div>
+
+    <div class="monitoring-section">
+    <h2><i class="fas fa-chart-line"></i> <span class="lang-text" data-ru="Мониторинг активов" data-kz="Активтерді бақылау"></span></h2>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h4 class="lang-text" data-ru="Распределение по типам" data-kz="Түрлер бойынша таралуы"></h4>
+                <canvas id="typeChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h4 class="lang-text" data-ru="Распределение по критичности" data-kz="Деңгейі бойынша бөлінуі"></h4>
+                <canvas id="criticalityChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h4 class="lang-text" data-ru="Статусы активов" data-kz="Активтердің статустары"></h4>
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h4 class="lang-text" data-ru="Активы по подразделениям" data-kz="Бөлімдер бойынша активтер"></h4>
+                <canvas id="departmentChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+    <div class="dropdown">
+        <button class="btn btn-export dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-download"></i>
+            <span class="lang-text" data-ru="Скачать отчет" data-kz="Есепті жүктеу"></span>
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+            <li><a class="dropdown-item export-link" href="#" data-format="excel"><i class="fas fa-file-excel"></i> Excel</a></li>
+            <li><a class="dropdown-item export-link" href="#" data-format="pdf"><i class="fas fa-file-pdf"></i> PDF</a></li>
+        </ul>
+    </div>
+
+    <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form id="reportForm">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title lang-text" id="reportModalLabel" data-ru="Параметры отчета" data-kz="Есеп параметрлері"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                <input type="hidden" id="selectedFormat"> 
+                <div class="mb-3">
+                    <label for="departmentInput" class="form-label lang-text" 
+                        data-ru="Подразделение (опционально)" 
+                        data-kz="Бөлім (міндетті емес)"></label>
+                    <input type="text" class="form-control" id="departmentInput" 
+                        data-placeholder-ru="Например: IT отдел"
+                        data-placeholder-kz="Мысалы: IT бөлімі"
+                        placeholder="Например: IT отдел">
+                </div>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <span class="lang-text" data-ru="Отмена" data-kz="Болдырмау"></span>
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-download"></i>
+                    <span class="lang-text" data-ru="Скачать" data-kz="Жүктеу"></span>
+                </button>
+                </div>
+            </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<style>
+:root {
+    --primary-color: #3498db;
+    --success-color: #2ecc71;
+    --danger-color: #e74c3c;
+    --warning-color: #f39c12;
+}
+
+.assets-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 24px;
+    margin: 20px 0;
+}
+
+.assets-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.assets-header h1 {
+    font-size: 24px;
+    margin: 0;
+    color: #2c3e50;
+}
+
+.assets-header h1 i {
+    margin-right: 10px;
+    color: var(--primary-color);
+}
+
+.assets-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 0.875rem;
+}
+
+.btn-import {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.btn-import:hover {
+    background: #e2e8f0;
+}
+
+.btn-add {
+    background: var(--success-color);
+    color: white;
+}
+
+.btn-add:hover {
+    background: #27ae60;
+}
+
+.btn-outline-primary {
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-outline-danger {
+    border: 1px solid var(--danger-color);
+    color: var(--danger-color);
+    background: transparent;
+}
+
+.btn-outline-danger:hover {
+    background: var(--danger-color);
+    color: white;
+}
+
+.assets-filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.filter-select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background: white;
+}
+
+.assets-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.assets-table th {
+    background: #f8fafc;
+    color: #64748b;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid #e2e8f0;
+    cursor: pointer;
+    user-select: none;
+}
+
+.assets-table th:hover {
+    background: #f1f5f9;
+}
+
+.assets-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+}
+
+.assets-table tr:hover {
+    background: #f8fafc;
+}
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.bg-danger {
+    background: #ef4444;
+}
+
+.bg-warning {
+    background: #f59e0b;
+}
+
+.bg-secondary {
+    background: #6b7280;
+}
+
+.bg-success {
+    background: #10b981;
+}
+
+.bg-info {
+    background: #06b6d4;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.assets-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-pagination {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.btn-pagination:hover {
+    background: #f8fafc;
+}
+
+.btn-pagination.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.modal-header {
+    border-bottom: 1px solid #e2e8f0;
+    padding: 16px 24px;
+}
+
+.modal-title {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.modal-title i {
+    margin-right: 10px;
+}
+
+.modal-body {
+    padding: 20px 24px;
+}
+
+.modal-footer {
+    border-top: 1px solid #e2e8f0;
+    padding: 16px 24px;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #475569;
+    margin-bottom: 6px;
+}
+
+.form-control, .form-select {
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 8px 12px;
+    width: 100%;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.monitoring-section {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.chart-container {
+  position: relative;
+  min-height: 300px;
+  margin-bottom: 20px;
+}
+
+.chart-container canvas {
+  width: 100% !important;
+  height: 300px !important;
+}
+
+.chart-fallback {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #666;
+  font-size: 16px;
+}
+
+textarea.form-control {
+    min-height: 80px;
+}
+
+.btn-export {
+    background: #4e73df;
+    color: white;
+}
+
+.btn-export:hover {
+    background: #2e59d9;
+    color: white;
+}
+
+.dropdown-menu {
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.dropdown-item {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.dropdown-item i {
+    margin-right: 8px;
+    width: 18px;
+    text-align: center;
+}
+
+.sort-icon {
+    margin-left: 5px;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+}
+
+th:hover .sort-icon {
+    opacity: 1;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const assetModal = new bootstrap.Modal(document.getElementById('assetModal'));
+    const dropdown = new bootstrap.Dropdown(document.getElementById('exportDropdown'));
+
+    
+    document.getElementById('assetForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const form = e.target;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.innerHTML;
+        const isEditMode = document.getElementById('formMode').value === 'edit';
+        
+        try {
+            // Валидация обязательных полей
+            if (!form.name.value || !form.type.value || !form.status.value || !form.criticality.value) {
+                throw new Error('Пожалуйста, заполните все обязательные поля');
+            }
+
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+            submitBtn.disabled = true;
+            
+            // Подготовка FormData
+            const formData = new FormData(form);
+            const endpoint = isEditMode ? '/assets/update' : '/assets/create';
+
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Ошибка сервера');
+            }
+
+            const result = await response.json();
+            
+            assetModal.hide();
+            
+            await Swal.fire({
+                icon: 'success',
+                title: 'Успех!',
+                text: result.message,
+                timer: 1500,
+                showConfirmButton: false
+            });
+
+            window.location.reload();
+        } catch (error) {
+            console.error('Ошибка:', error);
+            await Swal.fire({
+                icon: 'error',
+                title: 'Ошибка',
+                text: error.message || 'Не удалось сохранить изменения'
+            });
+        } finally {
+            submitBtn.innerHTML = originalBtnText;
+            submitBtn.disabled = false;
+        }
+    });
+
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const row = this.closest('tr');
+
+            // Заполняем форму данными
+            document.getElementById('assetId').value = row.dataset.id;
+            document.getElementById('formMode').value = 'edit';
+
+            document.getElementById('assetName').value = row.dataset.name;
+            document.getElementById('assetType').value = row.dataset.type;
+            document.getElementById('assetInventory').value = row.dataset.inventory || '';
+            document.getElementById('assetStatus').value = row.dataset.status;
+            document.getElementById('assetCriticality').value = row.dataset.criticality;
+            document.getElementById('assetDepartment').value = row.dataset.department || '';
+            document.getElementById('assetOwner').value = row.dataset.owner || '';
+            document.getElementById('assetSource').value = row.dataset.source || 'Manual';
+            document.getElementById('assetDescription').value = row.dataset.description || '';
+
+            // Меняем заголовок
+            document.getElementById('assetModalLabel').innerHTML = '<i class="fas fa-edit"></i> Редактировать актив';
+
+            // Устанавливаем action на форму
+            document.getElementById('assetForm').action = '/assets/update';
+
+            // Открываем модалку (Bootstrap 5)
+            const assetModal = new bootstrap.Modal(document.getElementById('assetModal'));
+            assetModal.show();
+        });
+    });
+    
+    document.getElementById('assetForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const form = e.target;
+
+        // Простая валидация
+        if (!form.name.value || !form.type.value || !form.status.value || !form.criticality.value) {
+            await Swal.fire({
+                icon: 'error',
+                title: 'Ошибка',
+                text: 'Пожалуйста, заполните все обязательные поля'
+            });
+            return;
+        }
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+
+        try {
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+            submitBtn.disabled = true;
+
+            const formData = new FormData(form);
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.redirected) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Успешно!',
+                    text: 'Актив успешно сохранён',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+                window.location.href = response.url;
+            } else {
+                const result = await response.json();
+                throw new Error(result.message || 'Ошибка при сохранении');
+            }
+        } catch (err) {
+            await Swal.fire({
+                icon: 'error',
+                title: 'Ошибка',
+                text: err.message
+            });
+        } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+    
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const row = this.closest('tr');
+            const assetId = row.dataset.id;
+            const assetName = row.querySelector('td:first-child').textContent.trim();
+
+            const { isConfirmed } = await Swal.fire({
+                title: 'Удалить актив?',
+                html: `Вы уверены, что хотите удалить <b>${assetName}</b>?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Да, удалить!',
+                cancelButtonText: 'Отмена',
+                reverseButtons: true
+            });
+
+            if (isConfirmed) {
+                try {
+                    const response = await fetch('/assets/delete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ id: assetId })
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        row.style.transition = 'all 0.3s';
+                        row.style.opacity = '0';
+                        setTimeout(() => {
+                            row.remove();
+                            Swal.fire({
+                                title: 'Успешно!',
+                                text: `Актив "${assetName}" удален`,
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        }, 300);
+                    } else {
+                        throw new Error(result.message || 'Ошибка при удалении');
+                    }
+                } catch (error) {
+                    Swal.fire({
+                        title: 'Ошибка!',
+                        text: error.message,
+                        icon: 'error'
+                    });
+                }
+            }
+        });
+    });
+
+    const searchInput = document.getElementById('searchInput');
+    const typeFilter = document.getElementById('typeFilter');
+    const criticalityFilter = document.getElementById('criticalityFilter');
+    const tableBody = document.querySelector('.assets-table tbody');
+    const allRows = Array.from(document.querySelectorAll('.assets-table tbody tr')); 
+    let currentPage = 1;
+    const rowsPerPage = 10; 
+
+    function applyFilters() {
+    const searchTerm = searchInput.value.toLowerCase();
+    const typeValue = typeFilter.value;
+    const criticalityValue = criticalityFilter.value;
+
+    const filteredData = allRows.filter(row => {
+        const nameMatch = row.dataset.name.toLowerCase().includes(searchTerm);
+        const typeMatch = typeValue === '' || row.dataset.type === typeValue;
+        const criticalityMatch = criticalityValue === '' || row.dataset.criticality === criticalityValue;
+        return nameMatch && typeMatch && criticalityMatch;
+    });
+
+    renderTable(filteredData);
+    }
+
+    function renderTable(filteredRows) {
+    tableBody.innerHTML = '';
+    
+    const start = (currentPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const paginatedRows = filteredRows.slice(start, end);
+
+    paginatedRows.forEach(row => {
+        tableBody.appendChild(row.cloneNode(true));
+    });
+
+    updatePagination(filteredRows.length);
+    }
+
+    function updatePagination(totalItems) {
+    const totalPages = Math.ceil(totalItems / rowsPerPage);
+    }
+
+    searchInput.addEventListener('input', applyFilters);
+    typeFilter.addEventListener('change', applyFilters);
+    criticalityFilter.addEventListener('change', applyFilters);
+    
+    document.querySelectorAll('.assets-table th[data-sort]').forEach(header => {
+            header.addEventListener('click', function() {
+                const sortKey = this.getAttribute('data-sort');
+                const icon = this.querySelector('i');
+                const isAsc = this.classList.toggle('asc');
+                
+                document.querySelectorAll('.assets-table th').forEach(h => {
+                    if (h !== this) {
+                        h.classList.remove('asc', 'desc');
+                        h.querySelector('i').className = 'fas fa-sort';
+                    }
+                });
+                
+                icon.className = isAsc ? 'fas fa-sort-up' : 'fas fa-sort-down';
+                this.classList.toggle('desc', !isAsc);
+                
+                const tbody = document.querySelector('.assets-table tbody');
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                
+                rows.sort((a, b) => {
+                    const aValue = a.dataset[sortKey] || '';
+                    const bValue = b.dataset[sortKey] || '';
+                    
+                    if (sortKey === 'created') {
+                        return isAsc ? 
+                            new Date(aValue) - new Date(bValue) : 
+                            new Date(bValue) - new Date(aValue);
+                    } else {
+                        return isAsc ? 
+                            aValue.localeCompare(bValue) : 
+                            bValue.localeCompare(aValue);
+                    }
+                });
+                
+                rows.forEach(row => tbody.appendChild(row));
+            });
+        });
+        
+    function prepareChartData() {
+        const assets = Array.from(document.querySelectorAll('.assets-table tbody tr')).map(row => {
+            return {
+                type: row.dataset.type,
+                criticality: row.dataset.criticality,
+                status: row.dataset.status,
+                department: row.dataset.department || 'Не указано'
+            };
+        });
+        
+        const types = {};
+        const criticalities = {};
+        const statuses = {};
+        const departments = {};
+        
+        assets.forEach(asset => {
+            types[asset.type] = (types[asset.type] || 0) + 1;
+            criticalities[asset.criticality] = (criticalities[asset.criticality] || 0) + 1;
+            statuses[asset.status] = (statuses[asset.status] || 0) + 1;
+            departments[asset.department] = (departments[asset.department] || 0) + 1;
+        });
+        
+        return { types, criticalities, statuses, departments };
+    }
+
+    function createPieChart(ctx, data, label) {
+        const backgroundColors = [
+            'rgba(54, 162, 235, 0.7)',
+            'rgba(255, 99, 132, 0.7)',
+            'rgba(75, 192, 192, 0.7)',
+            'rgba(255, 159, 64, 0.7)',
+            'rgba(153, 102, 255, 0.7)',
+            'rgba(255, 205, 86, 0.7)'
+        ];
+        
+        return new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(data),
+                datasets: [{
+                    data: Object.values(data),
+                    backgroundColor: backgroundColors.slice(0, Object.keys(data).length),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    title: {
+                        display: true,
+                        text: label,
+                        font: {
+                            size: 14
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function createBarChart(ctx, data, label) {
+        return new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(data),
+                datasets: [{
+                    label: label,
+                    data: Object.values(data),
+                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: label,
+                        font: {
+                            size: 14
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    async function initCharts() {
+    try {
+        const response = await fetch("/assets/json");
+        const assets = await response.json();
+
+        const types = {};
+        const criticalities = {};
+        const statuses = {};
+        const departments = {};
+
+        assets.forEach(asset => {
+            types[asset.type] = (types[asset.type] || 0) + 1;
+            criticalities[asset.criticality] = (criticalities[asset.criticality] || 0) + 1;
+            statuses[asset.status] = (statuses[asset.status] || 0) + 1;
+            departments[asset.department] = (departments[asset.department] || 0) + 1;
+        });
+
+        Chart.getChart('typeChart')?.destroy();
+        Chart.getChart('criticalityChart')?.destroy();
+        Chart.getChart('statusChart')?.destroy();
+        Chart.getChart('departmentChart')?.destroy();
+
+        createPieChart(document.getElementById('typeChart'), types);
+        createPieChart(document.getElementById('criticalityChart'), criticalities);
+        createPieChart(document.getElementById('statusChart'), statuses);
+        createBarChart(document.getElementById('departmentChart'), departments);
+
+    } catch (error) {
+        console.error("Ошибка загрузки данных для графиков:", error);
+    }
+}
+
+    initCharts();
+
+        document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const format = this.dataset.format;
+            document.getElementById('selectedFormat').value = format;
+
+            const departmentFilter = document.getElementById('assetDepartment');
+            const selectedDepartment = departmentFilter ? departmentFilter.value : "";
+
+            document.getElementById('departmentInput').value = selectedDepartment;
+
+            const modal = new bootstrap.Modal(document.getElementById('reportModal'));
+            modal.show();
+        });
+        });
+
+       document.getElementById('reportForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  const format = document.getElementById('selectedFormat').value;
+  const department = document.getElementById('departmentInput').value.trim();
+
+  let url = `/assets/export/${format}`;
+  if (department !== "") {
+    url += `?department=${encodeURIComponent(department)}`;
+  }
+
+  const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
+  modal.hide();
+
+  setTimeout(() => {
+    window.location.href = url;
+  }, 300);
+});
+    searchInput.addEventListener('input', function() {
+        setTimeout(initCharts, 300);
+    });
+    typeFilter.addEventListener('change', initCharts);
+    criticalityFilter.addEventListener('change', initCharts);
+});
+</script>
+{% endblock %}
+
+

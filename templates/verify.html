@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title class="translate" data-key="confirm_title">Подтверждение кода | IRMAP</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f9fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .verify-container {
+            background: #fff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 400px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            margin-bottom: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #004999;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+  
+<body>
+    <div class="verify-container">
+        <!-- Переключатель языков -->
+        <div class="language-switcher">
+            <a href="#" class="translate active" data-lang="ru" data-key="lang_ru">Рус</a>
+            <a href="#" class="translate" data-lang="kz" data-key="lang_kz">Қаз</a>
+        </div>
+
+        <h2 class="translate" data-key="confirm_header">Введите код подтверждения</h2>
+        {% if error %}
+    <p class="error translate" data-key="error_message">{{ error }}</p>
+    {% endif %}
+
+        <form method="post">
+            <label for="code" class="translate" data-key="code_label">Код:</label>
+            <input type="text" class="form-control" name="code" id="code" required
+                   placeholder="Введите 6-значный код" data-translate="code_placeholder">
+            <button type="submit" class="btn btn-primary translate" data-key="confirm_btn">Подтвердить</button>
+        </form>
+
+        <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let seconds = 30;
+        const btn = document.getElementById('resendBtn');
+
+        const countdown = setInterval(() => {
+            seconds--;
+            btn.textContent = `Отправить код повторно (${seconds})`;
+            if (seconds <= 0) {
+                clearInterval(countdown);
+                btn.disabled = false;
+                btn.textContent = 'Отправить код повторно';
+            }
+        }, 1000);
+    });
+</script>
+
+    </div>
+
+    <script>
+    // Словарь переводов
+    const translations = {
+        ru: {
+            confirm_title: "Подтверждение кода | IRMAP",
+            confirm_header: "Введите код подтверждения",
+            code_label: "Код:",
+            code_placeholder: "Введите 6-значный код",
+            confirm_btn: "Подтвердить",
+            lang_ru: "Рус",
+            lang_kz: "Қаз",
+            error_message: "Неверный код подтверждения"
+        },
+        kz: {
+            confirm_title: "Кодды растау | IRMAP",
+            confirm_header: "Растау кодын енгізіңіз",
+            code_label: "Код:",
+            code_placeholder: "6 таңбалы кодты енгізіңіз",
+            confirm_btn: "Растау",
+            lang_ru: "Рус",
+            lang_kz: "Қаз",
+            error_message: "Растау коды қате"
+        }
+    };
+
+    // Функция перевода
+    function switchLanguage(lang) {
+        document.querySelectorAll('.translate').forEach(element => {
+            const key = element.getAttribute('data-key');
+            if (translations[lang] && translations[lang][key]) {
+                element.textContent = translations[lang][key];
+            }
+        });
+        
+        // Обновляем placeholder
+        const codeInput = document.getElementById('code');
+        if (codeInput && translations[lang] && translations[lang]['code_placeholder']) {
+            codeInput.placeholder = translations[lang]['code_placeholder'];
+        }
+        
+        // Обновляем активный язык
+        document.querySelectorAll('.language-switcher a').forEach(link => {
+            link.classList.toggle('active', link.getAttribute('data-lang') === lang);
+        });
+        
+        localStorage.setItem('selectedLanguage', lang);
+    }
+
+    // Инициализация при загрузке
+    document.addEventListener('DOMContentLoaded', function() {
+        const savedLang = localStorage.getItem('selectedLanguage') || 'ru';
+        switchLanguage(savedLang);
+        
+        // Обработчики для переключателя языка
+        document.querySelectorAll('.language-switcher a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const lang = this.getAttribute('data-lang');
+                switchLanguage(lang);
+            });
+        });
+    });
+    </script>
+</body>
+
+</html>
