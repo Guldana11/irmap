@@ -1,0 +1,976 @@
+{% extends "base.html" %}
+
+{% block title %}Оценка рисков{% endblock %}
+
+{% block custom_css %}
+<style>
+     .risk-assessment-form {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+    
+    .standard-selector {
+        position: relative;
+    }
+    
+    .standard-info {
+        background-color: #f8f9fa;
+        border-left: 4px solid var(--irmap-blue);
+        transition: all 0.3s ease;
+    }
+    
+    .probability-scale .btn {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .impact-scale {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+    }
+    
+    .criteria-item {
+        padding: 10px;
+    }
+    
+    .criteria-name {
+        font-weight: 500;
+        margin-bottom: 5px;
+        display: block;
+    }
+    
+    .form-range::-webkit-slider-thumb {
+        background: var(--irmap-blue);
+    }
+    
+    .form-range::-moz-range-thumb {
+        background: var(--irmap-blue);
+    }
+    
+    #assessRisk {
+        transition: all 0.3s;
+        background: var(--irmap-blue);
+        border: none;
+        padding: 12px;
+    }
+    
+    #assessRisk:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 88, 179, 0.3);
+    }
+
+    .risk-section {
+        background-color: white;
+        border-radius: 8px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .standard-card {
+        border-left: 4px solid #0056b3;
+        padding: 20px;
+        margin-bottom: 20px;
+        background-color: #f8f9fa;
+        border-radius: 0 8px 8px 0;
+    }
+    
+    .standard-card h3 {
+        color: #0056b3;
+        margin-bottom: 15px;
+    }
+    
+    .matrix-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+        margin: 30px 0;
+    }
+    
+    .matrix-box {
+        flex: 1;
+        min-width: 300px;
+    }
+    
+    .risk-matrix {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+    
+    .risk-matrix th, .risk-matrix td {
+        border: 1px solid #dee2e6;
+        padding: 10px;
+        text-align: center;
+    }
+    
+    .risk-matrix th {
+        background-color: #f1f5f9;
+        font-weight: 600;
+    }
+    
+    .risk-low {
+        background-color: #d4edda;
+    }
+    
+    .risk-medium {
+        background-color: #fff3cd;
+    }
+    
+    .risk-high {
+        background-color: #f8d7da;
+    }
+    
+    .risk-calculator {
+        background-color: #e9f5ff;
+        padding: 25px;
+        border-radius: 8px;
+        margin-top: 30px;
+    }
+    
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+    
+    .risk-result {
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        font-weight: 500;
+        display: none;
+    }
+    
+    .legend {
+        display: flex;
+        gap: 15px;
+        margin: 15px 0;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <span class="lang-text" data-ru="Оценка рисков" data-kz="Тәуекелді бағалау">Оценка рисков</span>
+        </h1>
+    </div>
+    
+    <div class="risk-section">
+        <p class="lang-text" data-ru="Комплексный анализ рисков по международным стандартам с качественным и количественным подходом. Расчет уровня риска на основе матрицы (вероятность × ущерб) с поддержкой методологий ISO и NIST."
+           data-kz="Халықаралық стандарттар бойынша сапалы және сандық тәсілдермен тәуекелді кешенді талдау. ISO және NIST әдістемелерінің қолдауымен (ықтималдық × зақым) матрицасы негізінде тәуекел деңгейін есептеу.">
+            Комплексный анализ рисков по международным стандартам с качественным и количественным подходом. Расчет уровня риска на основе матрицы (вероятность × ущерб) с поддержкой методологий ISO и NIST.
+        </p>
+        <form action="/risk-assessment/history" method="get" style="margin-bottom: 1rem;">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-clock me-1"></i>
+                <span class="lang-text" data-ru="История оценок" data-kz="Бағалау тарихы">История оценок</span>
+            </button>
+        </form>                        
+        </div>
+       
+    </div>
+    
+    
+    <div class="risk-section">
+    <h2>
+        <span class="lang-text" data-ru="Оценка риска" data-kz="Тәуекелді бағалау">Оценка риска</span>
+    </h2>
+    
+    <div class="risk-assessment-form">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="standard-selector">
+                    <label for="assessment-standard" class="form-label d-flex align-items-center justify-content-between">
+                        <span>
+                            <i class="fas fa-shield-alt me-2"></i>
+                            <span class="lang-text" data-ru="Стандарт оценки" data-kz="Бағалау стандарты">Стандарт оценки</span>
+                        </span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#standardInfoModal">
+                            <i class="fas fa-circle-info"></i>
+                        </button>
+                    </label>
+
+                    <select class="form-select" id="assessment-standard">
+                        <option value="" selected disabled class="lang-text" data-ru="Выберите стандарт..." data-kz="Стандарт таңдаңыз...">Выберите стандарт...</option>
+                        <option value="iso27005">ISO/IEC 27005</option>
+                        <option value="nist">NIST SP 800-30</option>
+                        <option value="octave">OCTAVE</option>
+                    </select>
+                </div>
+            </div>
+           
+            <div class="col-md-6">
+                <label for="asset" class="form-label d-flex align-items-center justify-content-between">
+                    <span>
+                        <i class="fas fa-server me-2"></i>
+                        <span class="lang-text" data-ru="Актив" data-kz="Актив">Актив</span>
+                    </span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#assetInfoModal">
+                        <i class="fas fa-circle-info"></i>
+                    </button>
+                </label>
+
+                <select class="form-select" id="asset" name="asset_id">
+                    <option value="" selected disabled class="lang-text" data-ru="Выберите актив..." data-kz="Актив таңдаңыз...">Выберите актив...</option>
+                    {% for asset in assets %}
+                        <option value="{{ asset.id }}">{{ asset.name }}</option>
+                    {% endfor %}
+                </select>
+                
+            </div>
+         
+            <div class="col-md-6">
+                <label for="threat" class="form-label d-flex align-items-center justify-content-between">
+                    <span>
+                        <i class="fas fa-bug me-2"></i>
+                        <span class="lang-text" data-ru="Угроза" data-kz="Қауіп">Угроза</span>
+                    </span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#threatInfoModal">
+                        <i class="fas fa-circle-info"></i>
+                    </button>
+                </label>
+                
+                <form action="/threats/import" method="post" style="margin-bottom: 1rem;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-download me-1"></i>
+                        <span class="lang-text" data-ru="Импортировать угрозы" data-kz="Қауіптерді импорттау">Импортировать угрозы</span>
+                    </button>
+                </form>
+
+                <select class="form-select" id="threat" name="threat">
+                    <option value="" selected disabled class="lang-text" data-ru="Выберите угрозу..." data-kz="Қауіпті таңдаңыз...">
+                        Выберите угрозу...
+                    </option>
+                    {% for threat in threats %}
+                        <option value="{{ threat.name }}"
+                                class="lang-text"
+                                data-ru="{{ threat.name_ru }}"
+                                data-kz="{{ threat.name_kz }}">
+                            {{ threat.name_ru }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+                         
+            <div class="col-md-6">
+                <label for="vulnerability" class="form-label d-flex align-items-center justify-content-between">
+                    <span>
+                        <i class="fas fa-unlock me-2"></i>
+                        <span class="lang-text" data-ru="Уязвимость" data-kz="Әлсіздік">Уязвимость</span>
+                    </span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#vulnerabilityInfoModal">
+                        <i class="fas fa-circle-info"></i>
+                    </button>
+                </label>
+
+                <select class="form-select" id="vulnerability">
+                    <option value="" selected disabled class="lang-text" data-ru="Выберите уязвимость..." data-kz="Әлсіздікті таңдаңыз...">Выберите уязвимость...</option>
+                    <option value="weak_pass" class="lang-text" data-ru="Слабые пароли" data-kz="Әлсіз құпиясөздер">Слабые пароли</option>
+                    <option value="no_encrypt" class="lang-text" data-ru="Отсутствие шифрования" data-kz="Шифрлау болмауы">Отсутствие шифрования</option>
+                    <option value="old_soft" class="lang-text" data-ru="Устаревшее ПО" data-kz="Ескірген бағдарлама">Устаревшее ПО</option>
+                    <option value="misconfig" class="lang-text" data-ru="Некорректная настройка" data-kz="Дұрыс емес баптау">Некорректная настройка</option>
+                    <option value="no_backup" class="lang-text" data-ru="Отсутствие бэкапов" data-kz="Резервтік көшірмелердің болмауы">Отсутствие бэкапов</option>
+                </select>
+            </div>
+
+            
+   <div class="col-12 d-flex flex-column align-items-center">
+
+    <div class="mb-4 w-100" style="max-width: 600px;">
+        <label class="form-label d-flex align-items-center justify-content-between">
+            <span>
+                <i class="fas fa-chart-line me-2"></i>
+                <span class="lang-text" data-ru="Вероятность реализации" data-kz="Іске асу ықтималдығы">Вероятность реализации</span>
+            </span>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#probabilityInfoModal">
+                <i class="fas fa-circle-info"></i>
+            </button>
+        </label>
+
+        <div class="probability-scale">
+            <div class="btn-group w-100" role="group">
+                <input type="radio" class="btn-check" name="probability" id="prob-low" value="1" autocomplete="off">
+                <label class="btn btn-outline-success" for="prob-low">
+                    <i class="fas fa-arrow-down me-1"></i>
+                    <span class="lang-text" data-ru="Низкая" data-kz="Төмен">Низкая</span>
+                </label>
+
+                <input type="radio" class="btn-check" name="probability" id="prob-medium" value="3" autocomplete="off">
+                <label class="btn btn-outline-warning" for="prob-medium">
+                    <i class="fas fa-equals me-1"></i>
+                    <span class="lang-text" data-ru="Средняя" data-kz="Орташа">Средняя</span>
+                </label>
+
+                <input type="radio" class="btn-check" name="probability" id="prob-high" value="5" autocomplete="off">
+                <label class="btn btn-outline-danger" for="prob-high">
+                    <i class="fas fa-arrow-up me-1"></i>
+                    <span class="lang-text" data-ru="Высокая" data-kz="Жоғары">Высокая</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="w-100" style="max-width: 600px;">
+        <label class="form-label d-flex align-items-center justify-content-between">
+            <span>
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <span class="lang-text" data-ru="Потенциальный ущерб" data-kz="Ықтимал зақым">Потенциальный ущерб</span>
+            </span>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#impactInfoModal">
+                <i class="fas fa-circle-info"></i>
+            </button>
+        </label>
+
+        <div class="impact-scale">
+            <div class="impact-criteria">
+                <div class="criteria-item">
+                    <span class="criteria-name lang-text" data-ru="Конфиденциальность" data-kz="Құпиялылық">Конфиденциальность</span>
+                    <input type="range" class="form-range" min="1" max="5" step="1" id="confidentiality">
+                    <div class="scale-labels d-flex justify-content-between">
+                        <small class="text-muted">1</small>
+                        <small class="text-muted">5</small>
+                    </div>
+                </div>
+
+                <div class="criteria-item mt-3">
+                    <span class="criteria-name lang-text" data-ru="Доступность" data-kz="Қолжетімділік">Доступность</span>
+                    <input type="range" class="form-range" min="1" max="5" step="1" id="availability">
+                    <div class="scale-labels d-flex justify-content-between">
+                        <small class="text-muted">1</small>
+                        <small class="text-muted">5</small>
+                    </div>
+                </div>
+
+                <div class="criteria-item mt-3">
+                    <span class="criteria-name lang-text" data-ru="Целостность" data-kz="Тұтастық">Целостность</span>
+                    <input type="range" class="form-range" min="1" max="5" step="1" id="integrity">
+                    <div class="scale-labels d-flex justify-content-between">
+                        <small class="text-muted">1</small>
+                        <small class="text-muted">5</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+            
+            <form id="riskForm">
+        
+            <div id="riskResult" style="display: none;"></div>
+                <button type="button" class="btn btn-primary btn-lg w-100" id="assessRisk">
+                    <i class="fas fa-calculator me-2"></i>
+                    <span class="lang-text" data-ru="Оценить риск" data-kz="Тәуекелді бағалау">Оценить риск</span>
+                </button>
+                
+            </div>
+        </div>
+    </div>
+            
+    <div class="modal fade" id="standardInfoModal" tabindex="-1" aria-labelledby="standardInfoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                <span class="lang-text" data-ru="О стандартах оценки" data-kz="Бағалау стандарттары туралы">О стандартах оценки</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <ul class="list-group">
+                <li class="list-group-item">
+                    <strong>ISO/IEC 27005</strong><br>
+                    <span class="lang-text"
+                        data-ru="Международный стандарт управления рисками ИБ. Учитывает угрозы, уязвимости, вероятность и ущерб по модели CIA."
+                        data-kz="Ақпараттық қауіпсіздік тәуекелдерін басқаруға арналған халықаралық стандарт. Қауіптер, осалдықтар, ықтималдық және зақым (CIA моделі) ескеріледі.">
+                    Международный стандарт управления рисками ИБ...
+                    </span>
+                </li>
+                <li class="list-group-item">
+                    <strong>NIST SP 800-30</strong><br>
+                    <span class="lang-text"
+                        data-ru="Методика оценки рисков от NIST (США). Использует формулу: Риск = Угроза × Уязвимость × Ущерб."
+                        data-kz="NIST (АҚШ) тәуекелдерді бағалау әдістемесі. Формуласы: Тәуекел = Қауіп × Осалдық × Зиян.">
+                    Методика оценки рисков от NIST...
+                    </span>
+                </li>
+                <li class="list-group-item">
+                    <strong>OCTAVE</strong><br>
+                    <span class="lang-text"
+                        data-ru="Метод самооценки для организаций. Анализирует активы, мотивации злоумышленников и последствия."
+                        data-kz="Ұйымдарға арналған өзін-өзі бағалау әдісі. Активтерді, бұзушылардың ниетін және салдарын талдайды.">
+                    Метод самооценки для организаций...
+                    </span>
+                </li>
+                </ul>
+                <p class="mt-3 text-muted">
+                <small class="lang-text"
+                        data-ru="Выбор стандарта влияет на методику расчёта риска и стратегию защиты."
+                        data-kz="Таңдалған стандарт тәуекелді есептеу әдістемесіне және қорғаныс стратегиясына әсер етеді.">
+                    Выбор стандарта влияет на методику расчёта риска...
+                </small>
+                </p>
+            </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <span class="lang-text" data-ru="Закрыть" data-kz="Жабу">Закрыть</span>
+        </button>
+      </div>
+    </div>
+  </div>
+    </div>
+
+        <div class="modal fade" id="assetInfoModal" tabindex="-1" aria-labelledby="assetInfoLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                <span class="lang-text" data-ru="Типы активов" data-kz="Актив түрлері">Типы активов</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+
+            <div class="modal-body">
+                <p>
+                <span class="lang-text"
+                        data-ru="Тип актива помогает классифицировать ресурсы и определить меры защиты для каждого из них."
+                        data-kz="Актив түрі ресурстарды жіктеуге және оларды қорғау шараларын анықтауға көмектеседі.">
+                    Тип актива помогает классифицировать ресурсы...
+                </span>
+                </p>
+
+                <ul class="list-group">
+                <li class="list-group-item">
+                    <strong><span class="lang-text" data-ru="Сервер" data-kz="Сервер">Сервер</span></strong><br>
+                    <span class="lang-text"
+                        data-ru="Используется для хранения данных и запуска сервисов. Ключевой элемент ИТ-инфраструктуры."
+                        data-kz="Деректерді сақтау және қызметтерді іске қосу үшін пайдаланылады. IT инфрақұрылымының негізгі элементі.">
+                    Используется для хранения данных...
+                    </span>
+                </li>
+                <li class="list-group-item">
+                    <strong><span class="lang-text" data-ru="Рабочая станция" data-kz="Жұмыс станциясы">Рабочая станция</span></strong><br>
+                    <span class="lang-text"
+                        data-ru="Компьютеры сотрудников. Часто используются для повседневной работы и являются мишенью фишинг-атак."
+                        data-kz="Қызметкерлердің компьютерлері. Күнделікті жұмыс үшін пайдаланылады және фишинг шабуылдарының нысанасы.">
+                    Компьютеры сотрудников...
+                    </span>
+                </li>
+                <li class="list-group-item">
+                    <strong><span class="lang-text" data-ru="Сетевое оборудование" data-kz="Желілік жабдық">Сетевое оборудование</span></strong><br>
+                    <span class="lang-text"
+                        data-ru="Маршрутизаторы, коммутаторы, точки доступа. Обеспечивают сетевую связность."
+                        data-kz="Маршрутизаторлар, коммутаторлар, қатынау нүктелері. Желі байланысын қамтамасыз етеді.">
+                    Маршрутизаторы, коммутаторы...
+                    </span>
+                </li>
+                <li class="list-group-item">
+                    <strong><span class="lang-text" data-ru="Принтер/МФУ" data-kz="Принтер/МФУ">Принтер/МФУ</span></strong><br>
+                    <span class="lang-text"
+                        data-ru="Могут содержать конфиденциальные документы и иметь встроенные сетевые модули."
+                        data-kz="Құпия құжаттарды қамтуы мүмкін және кіріктірілген желілік модульдері бар.">
+                    Могут содержать конфиденциальные документы...
+                    </span>
+                </li>
+                <li class="list-group-item">
+                    <strong><span class="lang-text" data-ru="Компьютер" data-kz="Компьютер">Компьютер</span></strong><br>
+                    <span class="lang-text"
+                        data-ru="Общее обозначение для устройств с пользовательским доступом. Требует базовой защиты и мониторинга."
+                        data-kz="Пайдаланушылар қол жеткізетін құрылғылардың жалпы атауы. Қорғау мен бақылауды қажет етеді.">
+                    Общее обозначение для устройств...
+                    </span>
+                </li>
+                </ul>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <span class="lang-text" data-ru="Закрыть" data-kz="Жабу">Закрыть</span>
+                </button>
+            </div>
+            </div>
+        </div>
+        </div>
+
+         <div class="modal fade" id="threatInfoModal" tabindex="-1" aria-labelledby="threatInfoModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title lang-text" id="threatInfoModalLabel"
+                      data-ru="Классы угроз" data-kz="Қауіп түрлері">Классы угроз</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+          
+                    <input
+                    type="text"
+                    id="threatSearchInput"
+                    class="form-control mb-3 lang-text"
+                    placeholder=" Поиск угроз..."
+                    data-ru=" Поиск угроз..."
+                    data-kz=" Қауіптерді іздеу..."
+                    onkeyup="filterThreats()" />
+                  
+          
+                    <ul class="list-group" id="threatList">
+                        {% for threat in threats %}
+                          <li class="list-group-item">
+                            <strong class="lang-text"
+                                    data-ru="{{ threat.name_ru or threat.name }}"
+                                    data-kz="{{ threat.name_kz or threat.name }}">
+                              {{ threat.name }}
+                            </strong><br>
+                            <span class="lang-text"
+                                  data-ru="{{ threat.description or '' }}"
+                                  data-kz="{{ threat.description_kz or threat.description }}">
+                              {{ threat.description or '' }}
+                            </span>
+                          </li>
+                    {% endfor %}
+                  </ul>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary lang-text" data-bs-dismiss="modal"
+                          data-ru="Закрыть" data-kz="Жабу">Закрыть</button>
+                </div>
+              </div>
+            </div>
+          </div>
+               
+        <div class="modal fade" id="vulnerabilityInfoModal" tabindex="-1" aria-labelledby="vulnerabilityInfoModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title lang-text" id="vulnerabilityInfoModalLabel"
+                        data-ru="Типы уязвимостей" data-kz="Әлсіздік түрлері">Типы уязвимостей</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group">
+                    <li class="list-group-item">
+                        <strong class="lang-text" data-ru="Слабые пароли:" data-kz="Әлсіз парольдер:">Слабые пароли:</strong>
+                        <span class="lang-text" data-ru="Лёгкие для подбора пароли, которые снижают безопасность аккаунтов." data-kz="Оңай табылатын парольдер, тіркелгі қауіпсіздігін төмендетеді."></span>
+                    </li>
+                    <li class="list-group-item">
+                        <strong class="lang-text" data-ru="Отсутствие шифрования:" data-kz="Шифрлау болмауы:">Отсутствие шифрования:</strong>
+                        <span class="lang-text" data-ru="Передача данных в незашифрованном виде может привести к утечке." data-kz="Деректерді шифрсыз беру олардың таралуына әкелуі мүмкін."></span>
+                    </li>
+                    <li class="list-group-item">
+                        <strong class="lang-text" data-ru="Устаревшее ПО:" data-kz="Ескірген бағдарлама:">Устаревшее ПО:</strong>
+                        <span class="lang-text" data-ru="Использование неподдерживаемого или устаревшего программного обеспечения." data-kz="Қолдау көрсетілмейтін немесе ескірген бағдарламаларды қолдану."></span>
+                    </li>
+                    <li class="list-group-item">
+                        <strong class="lang-text" data-ru="Некорректная настройка:" data-kz="Дұрыс емес баптау:">Некорректная настройка:</strong>
+                        <span class="lang-text" data-ru="Ошибки в конфигурации систем могут открыть доступ злоумышленникам." data-kz="Баптаудағы қателіктер бұзушыларға жол ашады."></span>
+                    </li>
+                    <li class="list-group-item">
+                        <strong class="lang-text" data-ru="Отсутствие бэкапов:" data-kz="Резервтік көшірмелердің болмауы:">Отсутствие бэкапов:</strong>
+                        <span class="lang-text" data-ru="Отсутствие резервных копий данных повышает риск потерь." data-kz="Деректердің көшірмелері болмауы жоғалту қаупін арттырады."></span>
+                    </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary lang-text" data-bs-dismiss="modal"
+                    data-ru="Закрыть" data-kz="Жабу">Закрыть</button>
+                </div>
+                </div>
+            </div>
+            </div>
+
+        <div class="modal fade" id="probabilityInfoModal" tabindex="-1" aria-labelledby="probabilityInfoModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title lang-text" id="probabilityInfoModalLabel"
+                        data-ru="Уровни вероятности реализации" data-kz="Іске асу ықтималдығы деңгейлері">
+                    Уровни вероятности реализации
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group">
+                    <li class="list-group-item">
+                        <strong class="lang-text" data-ru="Низкая:" data-kz="Төмен:">Низкая:</strong>
+                        <span class="lang-text" data-ru="Маловероятное событие, практически не происходит." data-kz="Сирек болатын, іске асуы екіталай оқиға."></span>
+                    </li>
+                    <li class="list-group-item">
+                        <strong class="lang-text" data-ru="Средняя:" data-kz="Орташа:">Средняя:</strong>
+                        <span class="lang-text" data-ru="Событие может произойти при определённых условиях." data-kz="Белгілі бір жағдайларда болуы мүмкін."></span>
+                    </li>
+                    <li class="list-group-item">
+                        <strong class="lang-text" data-ru="Высокая:" data-kz="Жоғары:">Высокая:</strong>
+                        <span class="lang-text" data-ru="Высокая вероятность наступления события в ближайшее время." data-kz="Жақын арада іске асу ықтималдығы жоғары."></span>
+                    </li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary lang-text" data-bs-dismiss="modal"
+                    data-ru="Закрыть" data-kz="Жабу">Закрыть</button>
+                </div>
+                </div>
+            </div>
+            </div>
+
+        <div class="modal fade" id="impactInfoModal" tabindex="-1" aria-labelledby="impactInfoModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title lang-text" id="impactInfoModalLabel"
+                        data-ru="Критерии оценки ущерба" data-kz="Зиянды бағалау критерийлері">
+                    Критерии оценки ущерба
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="mb-4">
+                    <h6 class="lang-text" data-ru="Конфиденциальность" data-kz="Құпиялылық">Конфиденциальность</h6>
+                    <ul class="list-group small">
+                        <li class="list-group-item"><strong>1:</strong> <span class="lang-text" data-ru="Нет чувствительной информации." data-kz="Мәліметтер құпия емес."></span></li>
+                        <li class="list-group-item"><strong>2:</strong> <span class="lang-text" data-ru="Минимальный риск раскрытия, низкая важность." data-kz="Құпиялылықтың аздаған бұзылуы."></span></li>
+                        <li class="list-group-item"><strong>3:</strong> <span class="lang-text" data-ru="Может привести к разглашению служебной информации." data-kz="Қызметтік ақпараттың ашылу қаупі."></span></li>
+                        <li class="list-group-item"><strong>4:</strong> <span class="lang-text" data-ru="Раскрытие персональных данных." data-kz="Жеке деректердің ашылуы."></span></li>
+                        <li class="list-group-item"><strong>5:</strong> <span class="lang-text" data-ru="Утечка критичной или засекреченной информации." data-kz="Мемлекеттік немесе құпия ақпараттың таралуы."></span></li>
+                    </ul>
+                    </div>
+
+                    <div class="mb-4">
+                    <h6 class="lang-text" data-ru="Доступность" data-kz="Қолжетімділік">Доступность</h6>
+                    <ul class="list-group small">
+                        <li class="list-group-item"><strong>1:</strong> <span class="lang-text" data-ru="Нет зависимости от доступности." data-kz="Қолжетімділік маңызды емес."></span></li>
+                        <li class="list-group-item"><strong>2:</strong> <span class="lang-text" data-ru="Кратковременные сбои не влияют на работу." data-kz="Қысқа уақытқа істен шығу әсер етпейді."></span></li>
+                        <li class="list-group-item"><strong>3:</strong> <span class="lang-text" data-ru="Ограниченный доступ влияет на производительность." data-kz="Қолжетімділіктің шектелуі өнімділікке әсер етеді."></span></li>
+                        <li class="list-group-item"><strong>4:</strong> <span class="lang-text" data-ru="Долгосрочное нарушение влияет на бизнес." data-kz="Ұзақ уақыт істен шығу бизнеске әсер етеді."></span></li>
+                        <li class="list-group-item"><strong>5:</strong> <span class="lang-text" data-ru="Полная потеря доступа, критический ущерб." data-kz="Қолжетімділіктің толық жоғалуы, күрделі залал."></span></li>
+                    </ul>
+                    </div>
+
+                    <div>
+                    <h6 class="lang-text" data-ru="Целостность" data-kz="Тұтастық">Целостность</h6>
+                    <ul class="list-group small">
+                        <li class="list-group-item"><strong>1:</strong> <span class="lang-text" data-ru="Изменения не имеют значения." data-kz="Өзгерістер маңызды емес."></span></li>
+                        <li class="list-group-item"><strong>2:</strong> <span class="lang-text" data-ru="Мелкие нарушения, легко исправить." data-kz="Шағын бұзушылықтар, оңай түзетіледі."></span></li>
+                        <li class="list-group-item"><strong>3:</strong> <span class="lang-text" data-ru="Ошибки в данных могут повлиять на процессы." data-kz="Деректердегі қателіктер процестерге әсер етуі мүмкін."></span></li>
+                        <li class="list-group-item"><strong>4:</strong> <span class="lang-text" data-ru="Изменения нарушают бизнес-операции." data-kz="Өзгерістер бизнес процестерін бұзады."></span></li>
+                        <li class="list-group-item"><strong>5:</strong> <span class="lang-text" data-ru="Критические данные под угрозой. Потеря доверия." data-kz="Маңызды деректерге қауіп төнеді. Сенім жоғалуы."></span></li>
+                    </ul>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary lang-text" data-bs-dismiss="modal"
+                    data-ru="Закрыть" data-kz="Жабу">Закрыть</button>
+                </div>
+                </div>
+            </div>
+            </div>
+</div>
+    
+    <div class="risk-section">
+        <h2>
+            <span class="lang-text" data-ru="Матрица оценки рисков" data-kz="Тәуекелді бағалау матрицасы">Матрица оценки рисков</span>
+        </h2>
+        
+        <p class="lang-text" data-ru="Уровень риска определяется как произведение вероятности реализации угрозы на потенциальный ущерб:"
+           data-kz="Тәуекел деңгейі қауіптің іске асу ықтималдығы мен ықтимал зиянның көбейтіндісі ретінде анықталады:">
+            Уровень риска определяется как произведение вероятности на ущерб:
+        </p>
+        
+        <p><strong class="lang-text" data-ru="Уровень риска = Вероятность × Ущерб" data-kz="Тәуекел деңгейі = Ықтималдық × Зиян">Уровень риска = Вероятность × Ущерб</strong></p>
+        
+        <div class="matrix-container">
+            <div class="matrix-box">
+                <h4 class="lang-text" data-ru="Шкала вероятности" data-kz="Ықтималдық шкаласы">Шкала вероятности</h4>
+                <table class="risk-matrix">
+                    <tr>
+                        <th class="lang-text" data-ru="Уровень" data-kz="Деңгей">Уровень</th>
+                        <th class="lang-text" data-ru="Вероятность" data-kz="Ықтималдық">Вероятность</th>
+                        <th class="lang-text" data-ru="Описание" data-kz="Сипаттама">Описание</th>
+                    </tr>
+                    <tr><td>1</td><td class="lang-text" data-ru="Очень низкая" data-kz="Өте төмен">Очень низкая</td><td class="lang-text" data-ru="Менее 10% в течение года" data-kz="Жыл ішінде 10%-дан аз">Менее 10% в год</td></tr>
+                    <tr><td>2</td><td class="lang-text" data-ru="Низкая" data-kz="Төмен">Низкая</td><td class="lang-text" data-ru="10-30% в течение года" data-kz="Жыл ішінде 10-30%">10-30% в год</td></tr>
+                    <tr><td>3</td><td class="lang-text" data-ru="Средняя" data-kz="Орташа">Средняя</td><td class="lang-text" data-ru="30-60% в течение года" data-kz="Жыл ішінде 30-60%">30-60% в год</td></tr>
+                    <tr><td>4</td><td class="lang-text" data-ru="Высокая" data-kz="Жоғары">Высокая</td><td class="lang-text" data-ru="60-90% в течение года" data-kz="Жыл ішінде 60-90%">60-90% в год</td></tr>
+                    <tr><td>5</td><td class="lang-text" data-ru="Очень высокая" data-kz="Өте жоғары">Очень высокая</td><td class="lang-text" data-ru="Более 90% в течение года" data-kz="Жыл ішінде 90%-дан жоғары">Более 90% в год</td></tr>
+                </table>
+            </div>
+            
+            <div class="matrix-box">
+                <h4 class="lang-text" data-ru="Шкала ущерба" data-kz="Зиян шкаласы">Шкала ущерба</h4>
+                <table class="risk-matrix">
+                    <tr>
+                        <th class="lang-text" data-ru="Уровень" data-kz="Деңгей">Уровень</th>
+                        <th class="lang-text" data-ru="Ущерб" data-kz="Зиян">Ущерб</th>
+                        <th class="lang-text" data-ru="Описание" data-kz="Сипаттама">Описание</th>
+                    </tr>
+                    <tr><td>1</td><td class="lang-text" data-ru="Незначительный" data-kz="Елеусіз">Незначительный</td><td class="lang-text" data-ru="Минимальное влияние на бизнес" data-kz="Бизнеске ең аз әсер">Минимальное влияние</td></tr>
+                    <tr><td>2</td><td class="lang-text" data-ru="Малый" data-kz="Аз">Малый</td><td class="lang-text" data-ru="Ограниченное влияние на бизнес" data-kz="Бизнеске шектеулі әсер">Ограниченное влияние</td></tr>
+                    <tr><td>3</td><td class="lang-text" data-ru="Средний" data-kz="Орташа">Средний</td><td class="lang-text" data-ru="Существенное влияние на бизнес" data-kz="Бизнеске елеулі әсер">Существенное влияние</td></tr>
+                    <tr><td>4</td><td class="lang-text" data-ru="Высокий" data-kz="Жоғары">Высокий</td><td class="lang-text" data-ru="Серьезное влияние на бизнес" data-kz="Бизнеске қатты әсер">Серьезное влияние</td></tr>
+                    <tr><td>5</td><td class="lang-text" data-ru="Критический" data-kz="Критикалық">Критический</td><td class="lang-text" data-ru="Катастрофическое влияние на бизнес" data-kz="Бизнеске катастрофалық әсер">Катастрофическое влияние</td></tr>
+                </table>
+            </div>
+        </div>
+        
+        <h4 class="lang-text" data-ru="Матрица уровня риска" data-kz="Тәуекел деңгейінің матрицасы">Матрица уровня риска</h4>
+        <table class="risk-matrix">
+            <tr>
+                <th rowspan="2" class="lang-text" data-ru="Ущерб" data-kz="Зиян">Ущерб</th>
+                <th colspan="5" class="lang-text" data-ru="Вероятность" data-kz="Ықтималдық">Вероятность</th>
+            </tr>
+            <tr>
+                <th>1</th><th>2</th><th>3</th><th>4</th><th>5</th>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td class="risk-medium">5</td><td class="risk-high">10</td><td class="risk-high">15</td><td class="risk-high">20</td><td class="risk-high">25</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td class="risk-low">4</td><td class="risk-medium">8</td><td class="risk-high">12</td><td class="risk-high">16</td><td class="risk-high">20</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td class="risk-low">3</td><td class="risk-medium">6</td><td class="risk-medium">9</td><td class="risk-high">12</td><td class="risk-high">15</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td class="risk-low">2</td><td class="risk-low">4</td><td class="risk-medium">6</td><td class="risk-medium">8</td><td class="risk-medium">10</td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td class="risk-low">1</td><td class="risk-low">2</td><td class="risk-low">3</td><td class="risk-medium">4</td><td class="risk-medium">5</td>
+            </tr>
+        </table>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color risk-low"></div>
+                <span class="lang-text" data-ru="Низкий риск (1-3)" data-kz="Төмен тәуекел (1-3)">Низкий риск (1-3)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color risk-medium"></div>
+                <span class="lang-text" data-ru="Средний риск (4-9)" data-kz="Орташа тәуекел (4-9)">Средний риск (4-9)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color risk-high"></div>
+                <span class="lang-text" data-ru="Высокий риск (10-25)" data-kz="Жоғары тәуекел (10-25)">Высокий риск (10-25)</span>
+            </div>
+        </div>
+    </div>
+    
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const standards = {
+        iso27005: {
+            title: "ISO/IEC 27005",
+            description: {
+                ru: "Оценка рисков согласно ISO 27005.",
+                kz: "ISO 27005 стандартына сәйкес тәуекелді бағалау."
+            }
+        },
+        nist: {
+            title: "NIST SP 800-30",
+            description: {
+                ru: "Оценка рисков согласно NIST.",
+                kz: "NIST стандарты бойынша тәуекелді бағалау."
+            }
+        },
+        octave: {
+            title: "OCTAVE",
+            description: {
+                ru: "Оценка рисков по методу OCTAVE.",
+                kz: "OCTAVE әдісі бойынша тәуекелді бағалау."
+            }
+        }
+    };
+
+    function getLocalizedText(russian, kazakh) {
+        const lang = localStorage.getItem('preferredLanguage') || 'ru';
+        return lang === 'kz' ? kazakh : russian;
+    }
+
+    async function calculateRisk() {
+        const standard = document.getElementById('assessment-standard').value;
+        const asset = document.getElementById('asset').value;
+        const threat = document.getElementById('threat').value;
+        const vulnerability = document.getElementById('vulnerability').value;
+        const probability = parseInt(document.querySelector('input[name="probability"]:checked')?.value);
+        const confidentiality = parseInt(document.getElementById('confidentiality')?.value);
+        const availability = parseInt(document.getElementById('availability')?.value);
+        const integrity = parseInt(document.getElementById('integrity')?.value);
+
+        if (!standard || !asset || !threat || isNaN(probability) || isNaN(confidentiality) || isNaN(availability) || isNaN(integrity)) {
+            alert(getLocalizedText('Заполните все поля', 'Барлық өрістерді толтырыңыз'));
+            return;
+        }
+
+        const ciaImpact = (confidentiality + availability + integrity) / 3;
+        const assetValue = 3;
+        const threatLevel = 3;
+        const vulnerabilityLevel = vulnerability ? 3 : 1;
+
+        let impact = 0;
+
+        switch (standard) {
+            case 'iso27005':
+                impact = Math.round((ciaImpact + assetValue + threatLevel + vulnerabilityLevel) / 4);
+                break;
+            case 'nist':
+            case 'octave':
+                impact = Math.round(ciaImpact);
+                break;
+            default:
+                alert("Не выбран стандарт оценки");
+                return;
+        }
+
+        const riskLevel = probability * impact;
+        let riskClass = '';
+        let riskDescription = '';
+
+        if (riskLevel <= 3) {
+            riskClass = 'risk-low';
+            riskDescription = getLocalizedText('Низкий риск', 'Төмен тәуекел');
+        } else if (riskLevel <= 9) {
+            riskClass = 'risk-medium';
+            riskDescription = getLocalizedText('Средний риск', 'Орташа тәуекел');
+        } else {
+            riskClass = 'risk-high';
+            riskDescription = getLocalizedText('Высокий риск', 'Жоғары тәуекел');
+        }
+
+        const assetText = document.querySelector(`#asset option[value="${asset}"]`)?.textContent || '';
+        const threatText = document.querySelector(`#threat option[value="${threat}"]`)?.textContent || '';
+        const vulnerabilityText = vulnerability
+            ? document.querySelector(`#vulnerability option[value="${vulnerability}"]`)?.textContent
+            : getLocalizedText('Не указана', 'Көрсетілмеген');
+        const probabilityLabel = {
+            1: 'low',
+            2: 'medium',
+            3: 'high'
+        }[probability];
+        const probabilityText = document.querySelector(`label[for="prob-${probabilityLabel}"] .lang-text`)?.textContent || '';
+
+        const resultElement = document.getElementById('riskResult');
+        resultElement.className = `risk-result ${riskClass}`;
+        resultElement.style.display = 'block';
+
+        let scenarioText = '';
+        if (standard === 'octave') {
+            scenarioText = `<p><strong>${getLocalizedText('Сценарий:', 'Сценарий:')}</strong> ${assetText} — ${threatText} — ${vulnerabilityText}</p>`;
+        }
+
+        resultElement.innerHTML = `
+            <div class="risk-header">
+                <h4>${getLocalizedText('Результат оценки риска', 'Тәуекелді бағалау нәтижесі')}</h4>
+                <div class="risk-level">${riskLevel} - ${riskDescription}</div>
+            </div>
+            <div class="risk-details">
+                <p><strong>${getLocalizedText('Стандарт:', 'Стандарт:')}</strong> ${standards[standard]?.title || ''}</p>
+                <p><strong>${getLocalizedText('Актив:', 'Актив:')}</strong> ${assetText}</p>
+                <p><strong>${getLocalizedText('Угроза:', 'Қауіп:')}</strong> ${threatText}</p>
+                <p><strong>${getLocalizedText('Уязвимость:', 'Әлсіздік:')}</strong> ${vulnerabilityText}</p>
+                <p><strong>${getLocalizedText('Вероятность:', 'Ықтималдық:')}</strong> ${probabilityText} (${probability})</p>
+                <p><strong>${getLocalizedText('Ущерб (CIA):', 'Зақым (CIA):')}</strong> 
+                    ${getLocalizedText('Конф.', 'Құп.')} ${confidentiality}, 
+                    ${getLocalizedText('Дост.', 'Қолж.')} ${availability}, 
+                    ${getLocalizedText('Цел.', 'Тұт.')} ${integrity}
+                </p>
+                ${scenarioText}
+            </div>
+        `;
+
+        const formData = new FormData();
+        formData.append("asset_id", asset);
+        formData.append("method", standard);
+        formData.append("threat", threat);
+        formData.append("vulnerability", vulnerability);
+        formData.append("likelihood", probability);
+        formData.append("impact", impact);
+
+        try {
+            console.log(" Отправляю POST /risk-assessment/calculate");
+
+            const response = await fetch("/risk-assessment/calculate", {
+                method: "POST",
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                return;
+            }
+
+            const data = await response.json();
+        } catch (error) {
+            console.error(" Ошибка сети:", error);
+        }
+                resultElement.scrollIntoView({ behavior: 'smooth' });
+            }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        const assessBtn = document.getElementById('assessRisk');
+        if (assessBtn) {
+            assessBtn.addEventListener('click', async function (e) {
+            e.preventDefault();
+            await calculateRisk();  
+        });
+        }
+
+        document.getElementById('assessment-standard').addEventListener('change', function() {
+            const standard = this.value;
+            const infoBox = document.getElementById('standardInfo');
+            
+            if (standard && standards[standard]) {
+                document.getElementById('standardTitle').textContent = standards[standard].title;
+                document.getElementById('standardDescription').textContent = 
+                    standards[standard].description[localStorage.getItem('preferredLanguage') || 'ru'];
+                infoBox.style.display = 'block';
+            } else {
+                infoBox.style.display = 'none';
+            }
+        });
+
+        document.querySelectorAll('.language-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                setTimeout(() => {
+                    const standard = document.getElementById('assessment-standard').value;
+                    if (standard && standards[standard]) {
+                        document.getElementById('standardDescription').textContent = 
+                            standards[standard].description[this.dataset.lang];
+                    }
+                    const resultElement = document.getElementById('riskResult');
+                    if (resultElement.style.display === 'block') {
+                        calculateRisk(); 
+                    }
+                }, 100);
+            });
+        });
+    });
+</script>
+{% endblock %}

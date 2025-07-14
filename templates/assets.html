@@ -140,7 +140,7 @@
                 </select>
                 
                 <select id="criticalityFilter" class="filter-select">
-                    <option value="" class="lang-text" data-ru="Все критичности" data-kz="Барлық критикалылық"></option>
+                    <option value="" class="lang-text" data-ru="Все критичности" data-kz="Барлық деңгей"></option>
                     <option class="lang-text">High</option>
                     <option class="lang-text">Medium</option>
                     <option class="lang-text">Low</option>
@@ -153,7 +153,7 @@
             <tr>
                 <th data-sort="name" class="lang-text" data-ru="Название" data-kz="Атауы"><span class="lang-text" data-ru="Название" data-kz="Атауы"></span> <i class="fas fa-sort"></i></th>
                 <th data-sort="type" class="lang-text" data-ru="Тип" data-kz="Түрі"><span class="lang-text" data-ru="Тип" data-kz="Түрі"></span> <i class="fas fa-sort"></i></th>
-                <th data-sort="criticality" class="lang-text" data-ru="Критичность" data-kz="Критикалылық"><span class="lang-text" data-ru="Критичность" data-kz="Критикалылық"></span></th>
+                <th data-sort="criticality" class="lang-text" data-ru="Критичность" data-kz="Деңгейі"><span class="lang-text" data-ru="Критичность" data-kz="Критикалылық"></span></th>
                 <th data-sort="department" class="lang-text" data-ru="Подразделение" data-kz="Бөлім"><span class="lang-text" data-ru="Подразделение" data-kz="Бөлім"></span></th>
                 <th data-sort="owner" class="lang-text" data-ru="Владелец" data-kz="Иесі"><span class="lang-text" data-ru="Владелец" data-kz="Иесі"></span></th>
                 <th data-sort="status" class="lang-text" data-ru="Статус" data-kz="Статусы"><span class="lang-text" data-ru="Статус" data-kz="Статусы"></span></th>
@@ -701,7 +701,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const isEditMode = document.getElementById('formMode').value === 'edit';
         
         try {
-            // Валидация обязательных полей
             if (!form.name.value || !form.type.value || !form.status.value || !form.criticality.value) {
                 throw new Error('Пожалуйста, заполните все обязательные поля');
             }
@@ -709,7 +708,6 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
             submitBtn.disabled = true;
             
-            // Подготовка FormData
             const formData = new FormData(form);
             const endpoint = isEditMode ? '/assets/update' : '/assets/create';
 
@@ -784,7 +782,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const form = e.target;
 
-        // Простая валидация
         if (!form.name.value || !form.type.value || !form.status.value || !form.criticality.value) {
             await Swal.fire({
                 icon: 'error',

@@ -14,6 +14,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from routes.cmdb_import import import_from_glpi
 from dotenv import load_dotenv
 from models.asset import Asset
+from models.risk_assessment import RiskAssessment
+from routes import risk_assessment
 
 load_dotenv()
 
@@ -53,6 +55,8 @@ app.include_router(auth.router)
 app.include_router(profile_router)
 app.include_router(asset.router)
 app.include_router(cmdb_import.router, prefix="/cmdb")
+app.include_router(risk_assessment.router)
+
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -68,6 +72,8 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
         user = {"username": user}
 
     total_assets = db.query(Asset).count()
+    total_risks = db.query(RiskAssessment).count()
+    high_risks = db.query(RiskAssessment).filter(RiskAssessment.level.in_(['Высокий', 'Критический'])).count()
     high_critical_count = db.query(Asset).filter(Asset.criticality == "High").count()
 
 
@@ -77,6 +83,8 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
             "request": request,
             "user":user, 
             "total_assets": total_assets,
+            "total_risks": total_risks,
+            "high_risks": high_risks,
             "high_critical_count": high_critical_count
         }
     )

@@ -1,0 +1,15 @@
+fastapi 
+uvicorn 
+sqlalchemy 
+httpx 
+jinja2 
+itsdangerous
+pandas
+fastapi
+sqlalchemy
+passlib 
+pyotp 
+uvicorn
+reportlab
+matplotlib
+apscheduler

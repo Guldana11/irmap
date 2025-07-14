@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 lang-text"
+        data-ru="История оценок рисков"
+        data-kz="Тәуекелдерді бағалау тарихы">
+        История оценок рисков
+    </h2>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <form action="/risk-assessment" method="get" style="margin-bottom: 1rem;">
+            <button type="submit" class="btn btn-primary">
+                ← <span class="lang-text" data-ru="Назад к оценке" data-kz="Бағалауға оралу">Назад к оценке</span>
+            </button>
+        </form>
+        
+
+        <div>
+            <a href="/risk-assessment/export/excel" class="btn btn-success me-2">
+                <i class="fas fa-file-excel me-1"></i>
+                <span class="lang-text" data-ru="Excel отчёт" data-kz="Excel есебі">Excel отчёт</span>
+            </a>
+            <a href="/risk-assessment/export/pdf" class="btn btn-danger">
+                <i class="fas fa-file-pdf me-1"></i>
+                <span class="lang-text" data-ru="PDF отчёт" data-kz="PDF есебі">PDF отчёт</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="alert alert-info">
+                <strong class="lang-text" data-ru="Всего рисков" data-kz="Жалпы тәуекел саны">Всего рисков</strong>: {{ total_risks }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="alert alert-warning">
+                <strong class="lang-text" data-ru="Высоких рисков" data-kz="Жоғары тәуекел саны">Высоких рисков</strong>: {{ high_risks }}
+            </div>
+        </div>
+    </div>
+
+    <table class="table table-bordered table-striped" id="historyTable">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th class="lang-text" data-ru="Метод" data-kz="Әдіс">Метод</th>
+                <th class="lang-text" data-ru="Актив" data-kz="Актив">Актив</th>
+                <th class="lang-text" data-ru="Угроза" data-kz="Қауіп">Угроза</th>
+                <th class="lang-text" data-ru="Уязвимость" data-kz="Әлсіздік">Уязвимость</th>
+                <th class="lang-text" data-ru="Вероятность" data-kz="Ықтималдық">Вероятность</th>
+                <th class="lang-text" data-ru="Воздействие" data-kz="Әсер ету">Воздействие</th>
+                <th class="lang-text" data-ru="Баллы" data-kz="Ұпай">Баллы</th>
+                <th class="lang-text" data-ru="Уровень" data-kz="Деңгейі">Уровень</th>
+                <th class="lang-text" data-ru="Дата" data-kz="Күні">Дата</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in assessments %}
+            <tr>
+                <td>{{ a.id }}</td>
+                <td>{{ a.method }}</td>
+                <td>{{ a.asset.name_ru if lang == 'ru' else a.asset.name_kz }}</td>
+                <td>{{ a.threat }}</td>
+                <td>{{ a.vulnerability }}</td>
+                <td>{{ a.likelihood }}</td>
+                <td>{{ a.impact }}</td>
+                <td>{{ a.score }}</td>
+                <td class="lang-text"
+                    data-ru="{{ a.level }}"
+                    data-kz="{% if a.level == 'Низкий' %}Төмен{% elif a.level == 'Средний' %}Орташа{% elif a.level == 'Высокий' %}Жоғары{% elif a.level == 'Критический' %}Критикалды{% else %}{{ a.level }}{% endif %}">
+                    {{ a.level }}
+                </td>
+                <td>{{ a.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

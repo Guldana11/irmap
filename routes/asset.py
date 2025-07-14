@@ -274,7 +274,6 @@ async def export_assets_pdf(department: str = Query("", alias="department"), db:
         query = query.filter(Asset.department == department)
     assets = query.all()
 
-    # Подготовка таблицы
     data = [[
         asset.name,
         asset.type,
@@ -316,7 +315,6 @@ async def export_assets_pdf(department: str = Query("", alias="department"), db:
 
     elements.append(table)
 
-    # Генерация графика
     fig, ax = plt.subplots()
     types = [asset.type for asset in assets]
     ax.hist(types, bins=len(set(types)))
@@ -326,7 +324,6 @@ async def export_assets_pdf(department: str = Query("", alias="department"), db:
     plt.close()
     img_buffer.seek(0)
 
-    # Добавляем изображение графика
     img = Image(img_buffer, width=500, height=250)
     elements.append(img)
 

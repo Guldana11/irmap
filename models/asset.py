@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from db import Base
 
@@ -16,6 +17,7 @@ class Asset(Base):
     external_id = Column(String, unique=True)
     is_external = Column(Boolean, default=False)
     source = Column(String, nullable=False)
-    inventory_number=Column(Integer)
-    description=Column(String)
+    inventory_number = Column(Integer)
+    description = Column(String)
 
+    risk_assessments = relationship("RiskAssessment", back_populates="asset", cascade="all, delete")
