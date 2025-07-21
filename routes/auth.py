@@ -23,11 +23,9 @@ def get_db():
     finally:
         db.close()
 
-
 @router.get("/login")
 def show_login(request: Request):
     return templates.TemplateResponse("login.html", {"request": request,  "user": User})
-
 
 @router.post("/login")
 def login(
@@ -52,7 +50,6 @@ def login(
 @router.get("/register")
 def show_register(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
-
 
 @router.post("/register")
 def register(

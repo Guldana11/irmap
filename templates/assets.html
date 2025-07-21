@@ -269,39 +269,38 @@
         {% endif %}
     </div>
 
-    <div class="monitoring-section">
-    <h2><i class="fas fa-chart-line"></i> <span class="lang-text" data-ru="Мониторинг активов" data-kz="Активтерді бақылау"></span></h2>
-    <div class="row">
-        <div class="col-md-6">
-            <div class="chart-container">
-                <h4 class="lang-text" data-ru="Распределение по типам" data-kz="Түрлер бойынша таралуы"></h4>
-                <canvas id="typeChart"></canvas>
+        <div class="monitoring-section">
+        <h2><i class="fas fa-chart-line"></i> <span class="lang-text" data-ru="Мониторинг активов" data-kz="Активтерді бақылау"></span></h2>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h4 class="lang-text" data-ru="Распределение по типам" data-kz="Түрлер бойынша таралуы"></h4>
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h4 class="lang-text" data-ru="Распределение по критичности" data-kz="Деңгейі бойынша бөлінуі"></h4>
+                    <canvas id="criticalityChart"></canvas>
+                </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="chart-container">
-                <h4 class="lang-text" data-ru="Распределение по критичности" data-kz="Деңгейі бойынша бөлінуі"></h4>
-                <canvas id="criticalityChart"></canvas>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h4 class="lang-text" data-ru="Статусы активов" data-kz="Активтердің статустары"></h4>
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h4 class="lang-text" data-ru="Активы по подразделениям" data-kz="Бөлімдер бойынша активтер"></h4>
+                    <canvas id="departmentChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
-    
-    <div class="row mt-4">
-        <div class="col-md-6">
-            <div class="chart-container">
-                <h4 class="lang-text" data-ru="Статусы активов" data-kz="Активтердің статустары"></h4>
-                <canvas id="statusChart"></canvas>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="chart-container">
-                <h4 class="lang-text" data-ru="Активы по подразделениям" data-kz="Бөлімдер бойынша активтер"></h4>
-                <canvas id="departmentChart"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
     
     <div class="dropdown">
         <button class="btn btn-export dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -347,7 +346,6 @@
             </form>
         </div>
     </div>
-
 </div>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -356,7 +354,6 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 
 <style>
 :root {
@@ -686,468 +683,464 @@ th:hover .sort-icon {
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    
-    const assetModal = new bootstrap.Modal(document.getElementById('assetModal'));
-    const dropdown = new bootstrap.Dropdown(document.getElementById('exportDropdown'));
-
-    
-    document.getElementById('assetForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
+    document.addEventListener('DOMContentLoaded', function() {
+        const assetModal = new bootstrap.Modal(document.getElementById('assetModal'));
+        const dropdown = new bootstrap.Dropdown(document.getElementById('exportDropdown'));
         
-        const form = e.target;
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalBtnText = submitBtn.innerHTML;
-        const isEditMode = document.getElementById('formMode').value === 'edit';
-        
-        try {
-            if (!form.name.value || !form.type.value || !form.status.value || !form.criticality.value) {
-                throw new Error('Пожалуйста, заполните все обязательные поля');
-            }
-
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
-            submitBtn.disabled = true;
+        document.getElementById('assetForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            const formData = new FormData(form);
-            const endpoint = isEditMode ? '/assets/update' : '/assets/create';
-
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Ошибка сервера');
-            }
-
-            const result = await response.json();
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            const isEditMode = document.getElementById('formMode').value === 'edit';
             
-            assetModal.hide();
-            
-            await Swal.fire({
-                icon: 'success',
-                title: 'Успех!',
-                text: result.message,
-                timer: 1500,
-                showConfirmButton: false
-            });
+            try {
+                if (!form.name.value || !form.type.value || !form.status.value || !form.criticality.value) {
+                    throw new Error('Пожалуйста, заполните все обязательные поля');
+                }
 
-            window.location.reload();
-        } catch (error) {
-            console.error('Ошибка:', error);
-            await Swal.fire({
-                icon: 'error',
-                title: 'Ошибка',
-                text: error.message || 'Не удалось сохранить изменения'
-            });
-        } finally {
-            submitBtn.innerHTML = originalBtnText;
-            submitBtn.disabled = false;
-        }
-    });
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+                submitBtn.disabled = true;
+                
+                const formData = new FormData(form);
+                const endpoint = isEditMode ? '/assets/update' : '/assets/create';
 
-    document.querySelectorAll('.btn-edit').forEach(btn => {
-        btn.addEventListener('click', function () {
-            const row = this.closest('tr');
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: formData
+                });
 
-            // Заполняем форму данными
-            document.getElementById('assetId').value = row.dataset.id;
-            document.getElementById('formMode').value = 'edit';
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Ошибка сервера');
+                }
 
-            document.getElementById('assetName').value = row.dataset.name;
-            document.getElementById('assetType').value = row.dataset.type;
-            document.getElementById('assetInventory').value = row.dataset.inventory || '';
-            document.getElementById('assetStatus').value = row.dataset.status;
-            document.getElementById('assetCriticality').value = row.dataset.criticality;
-            document.getElementById('assetDepartment').value = row.dataset.department || '';
-            document.getElementById('assetOwner').value = row.dataset.owner || '';
-            document.getElementById('assetSource').value = row.dataset.source || 'Manual';
-            document.getElementById('assetDescription').value = row.dataset.description || '';
-
-            // Меняем заголовок
-            document.getElementById('assetModalLabel').innerHTML = '<i class="fas fa-edit"></i> Редактировать актив';
-
-            // Устанавливаем action на форму
-            document.getElementById('assetForm').action = '/assets/update';
-
-            // Открываем модалку (Bootstrap 5)
-            const assetModal = new bootstrap.Modal(document.getElementById('assetModal'));
-            assetModal.show();
-        });
-    });
-    
-    document.getElementById('assetForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
-
-        const form = e.target;
-
-        if (!form.name.value || !form.type.value || !form.status.value || !form.criticality.value) {
-            await Swal.fire({
-                icon: 'error',
-                title: 'Ошибка',
-                text: 'Пожалуйста, заполните все обязательные поля'
-            });
-            return;
-        }
-
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-
-        try {
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
-            submitBtn.disabled = true;
-
-            const formData = new FormData(form);
-            const response = await fetch(form.action, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (response.redirected) {
+                const result = await response.json();
+                
+                assetModal.hide();
+                
                 await Swal.fire({
                     icon: 'success',
-                    title: 'Успешно!',
-                    text: 'Актив успешно сохранён',
-                    timer: 2000,
+                    title: 'Успех!',
+                    text: result.message,
+                    timer: 1500,
                     showConfirmButton: false
                 });
-                window.location.href = response.url;
-            } else {
-                const result = await response.json();
-                throw new Error(result.message || 'Ошибка при сохранении');
+
+                window.location.reload();
+            } catch (error) {
+                console.error('Ошибка:', error);
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Ошибка',
+                    text: error.message || 'Не удалось сохранить изменения'
+                });
+            } finally {
+                submitBtn.innerHTML = originalBtnText;
+                submitBtn.disabled = false;
             }
-        } catch (err) {
-            await Swal.fire({
-                icon: 'error',
-                title: 'Ошибка',
-                text: err.message
-            });
-        } finally {
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        }
-    });
-    
-    document.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', async function() {
-            const row = this.closest('tr');
-            const assetId = row.dataset.id;
-            const assetName = row.querySelector('td:first-child').textContent.trim();
+        });
 
-            const { isConfirmed } = await Swal.fire({
-                title: 'Удалить актив?',
-                html: `Вы уверены, что хотите удалить <b>${assetName}</b>?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Да, удалить!',
-                cancelButtonText: 'Отмена',
-                reverseButtons: true
-            });
+        document.querySelectorAll('.btn-edit').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const row = this.closest('tr');
 
-            if (isConfirmed) {
-                try {
-                    const response = await fetch('/assets/delete', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({ id: assetId })
+                // Заполняем форму данными
+                document.getElementById('assetId').value = row.dataset.id;
+                document.getElementById('formMode').value = 'edit';
+
+                document.getElementById('assetName').value = row.dataset.name;
+                document.getElementById('assetType').value = row.dataset.type;
+                document.getElementById('assetInventory').value = row.dataset.inventory || '';
+                document.getElementById('assetStatus').value = row.dataset.status;
+                document.getElementById('assetCriticality').value = row.dataset.criticality;
+                document.getElementById('assetDepartment').value = row.dataset.department || '';
+                document.getElementById('assetOwner').value = row.dataset.owner || '';
+                document.getElementById('assetSource').value = row.dataset.source || 'Manual';
+                document.getElementById('assetDescription').value = row.dataset.description || '';
+
+                // Меняем заголовок
+                document.getElementById('assetModalLabel').innerHTML = '<i class="fas fa-edit"></i> Редактировать актив';
+
+                // Устанавливаем action на форму
+                document.getElementById('assetForm').action = '/assets/update';
+
+                // Открываем модалку (Bootstrap 5)
+                const assetModal = new bootstrap.Modal(document.getElementById('assetModal'));
+                assetModal.show();
+            });
+        });
+        
+        document.getElementById('assetForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const form = e.target;
+            if (!form.name.value || !form.type.value || !form.status.value || !form.criticality.value) {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Ошибка',
+                    text: 'Пожалуйста, заполните все обязательные поля'
+                });
+                return;
+            }
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+
+            try {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Сохранение...';
+                submitBtn.disabled = true;
+
+                const formData = new FormData(form);
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.redirected) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Успешно!',
+                        text: 'Актив успешно сохранён',
+                        timer: 2000,
+                        showConfirmButton: false
                     });
-
+                    window.location.href = response.url;
+                } else {
                     const result = await response.json();
-
-                    if (response.ok && result.success) {
-                        row.style.transition = 'all 0.3s';
-                        row.style.opacity = '0';
-                        setTimeout(() => {
-                            row.remove();
-                            Swal.fire({
-                                title: 'Успешно!',
-                                text: `Актив "${assetName}" удален`,
-                                icon: 'success',
-                                timer: 2000,
-                                showConfirmButton: false
-                            });
-                        }, 300);
-                    } else {
-                        throw new Error(result.message || 'Ошибка при удалении');
-                    }
-                } catch (error) {
-                    Swal.fire({
-                        title: 'Ошибка!',
-                        text: error.message,
-                        icon: 'error'
-                    });
+                    throw new Error(result.message || 'Ошибка при сохранении');
                 }
+            } catch (err) {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Ошибка',
+                    text: err.message
+                });
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
             }
         });
-    });
+        
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const row = this.closest('tr');
+                const assetId = row.dataset.id;
+                const assetName = row.querySelector('td:first-child').textContent.trim();
 
-    const searchInput = document.getElementById('searchInput');
-    const typeFilter = document.getElementById('typeFilter');
-    const criticalityFilter = document.getElementById('criticalityFilter');
-    const tableBody = document.querySelector('.assets-table tbody');
-    const allRows = Array.from(document.querySelectorAll('.assets-table tbody tr')); 
-    let currentPage = 1;
-    const rowsPerPage = 10; 
-
-    function applyFilters() {
-    const searchTerm = searchInput.value.toLowerCase();
-    const typeValue = typeFilter.value;
-    const criticalityValue = criticalityFilter.value;
-
-    const filteredData = allRows.filter(row => {
-        const nameMatch = row.dataset.name.toLowerCase().includes(searchTerm);
-        const typeMatch = typeValue === '' || row.dataset.type === typeValue;
-        const criticalityMatch = criticalityValue === '' || row.dataset.criticality === criticalityValue;
-        return nameMatch && typeMatch && criticalityMatch;
-    });
-
-    renderTable(filteredData);
-    }
-
-    function renderTable(filteredRows) {
-    tableBody.innerHTML = '';
-    
-    const start = (currentPage - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-    const paginatedRows = filteredRows.slice(start, end);
-
-    paginatedRows.forEach(row => {
-        tableBody.appendChild(row.cloneNode(true));
-    });
-
-    updatePagination(filteredRows.length);
-    }
-
-    function updatePagination(totalItems) {
-    const totalPages = Math.ceil(totalItems / rowsPerPage);
-    }
-
-    searchInput.addEventListener('input', applyFilters);
-    typeFilter.addEventListener('change', applyFilters);
-    criticalityFilter.addEventListener('change', applyFilters);
-    
-    document.querySelectorAll('.assets-table th[data-sort]').forEach(header => {
-            header.addEventListener('click', function() {
-                const sortKey = this.getAttribute('data-sort');
-                const icon = this.querySelector('i');
-                const isAsc = this.classList.toggle('asc');
-                
-                document.querySelectorAll('.assets-table th').forEach(h => {
-                    if (h !== this) {
-                        h.classList.remove('asc', 'desc');
-                        h.querySelector('i').className = 'fas fa-sort';
-                    }
+                const { isConfirmed } = await Swal.fire({
+                    title: 'Удалить актив?',
+                    html: `Вы уверены, что хотите удалить <b>${assetName}</b>?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Да, удалить!',
+                    cancelButtonText: 'Отмена',
+                    reverseButtons: true
                 });
-                
-                icon.className = isAsc ? 'fas fa-sort-up' : 'fas fa-sort-down';
-                this.classList.toggle('desc', !isAsc);
-                
-                const tbody = document.querySelector('.assets-table tbody');
-                const rows = Array.from(tbody.querySelectorAll('tr'));
-                
-                rows.sort((a, b) => {
-                    const aValue = a.dataset[sortKey] || '';
-                    const bValue = b.dataset[sortKey] || '';
-                    
-                    if (sortKey === 'created') {
-                        return isAsc ? 
-                            new Date(aValue) - new Date(bValue) : 
-                            new Date(bValue) - new Date(aValue);
-                    } else {
-                        return isAsc ? 
-                            aValue.localeCompare(bValue) : 
-                            bValue.localeCompare(aValue);
+
+                if (isConfirmed) {
+                    try {
+                        const response = await fetch('/assets/delete', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ id: assetId })
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok && result.success) {
+                            row.style.transition = 'all 0.3s';
+                            row.style.opacity = '0';
+                            setTimeout(() => {
+                                row.remove();
+                                Swal.fire({
+                                    title: 'Успешно!',
+                                    text: `Актив "${assetName}" удален`,
+                                    icon: 'success',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                            }, 300);
+                        } else {
+                            throw new Error(result.message || 'Ошибка при удалении');
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            title: 'Ошибка!',
+                            text: error.message,
+                            icon: 'error'
+                        });
                     }
-                });
-                
-                rows.forEach(row => tbody.appendChild(row));
+                }
             });
         });
-        
-    function prepareChartData() {
-        const assets = Array.from(document.querySelectorAll('.assets-table tbody tr')).map(row => {
-            return {
-                type: row.dataset.type,
-                criticality: row.dataset.criticality,
-                status: row.dataset.status,
-                department: row.dataset.department || 'Не указано'
-            };
-        });
-        
-        const types = {};
-        const criticalities = {};
-        const statuses = {};
-        const departments = {};
-        
-        assets.forEach(asset => {
-            types[asset.type] = (types[asset.type] || 0) + 1;
-            criticalities[asset.criticality] = (criticalities[asset.criticality] || 0) + 1;
-            statuses[asset.status] = (statuses[asset.status] || 0) + 1;
-            departments[asset.department] = (departments[asset.department] || 0) + 1;
-        });
-        
-        return { types, criticalities, statuses, departments };
-    }
 
-    function createPieChart(ctx, data, label) {
-        const backgroundColors = [
-            'rgba(54, 162, 235, 0.7)',
-            'rgba(255, 99, 132, 0.7)',
-            'rgba(75, 192, 192, 0.7)',
-            'rgba(255, 159, 64, 0.7)',
-            'rgba(153, 102, 255, 0.7)',
-            'rgba(255, 205, 86, 0.7)'
-        ];
-        
-        return new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: Object.keys(data),
-                datasets: [{
-                    data: Object.values(data),
-                    backgroundColor: backgroundColors.slice(0, Object.keys(data).length),
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                    },
-                    title: {
-                        display: true,
-                        text: label,
-                        font: {
-                            size: 14
-                        }
-                    }
-                }
-            }
-        });
-    }
+        const searchInput = document.getElementById('searchInput');
+        const typeFilter = document.getElementById('typeFilter');
+        const criticalityFilter = document.getElementById('criticalityFilter');
+        const tableBody = document.querySelector('.assets-table tbody');
+        const allRows = Array.from(document.querySelectorAll('.assets-table tbody tr')); 
+        let currentPage = 1;
+        const rowsPerPage = 10; 
 
-    function createBarChart(ctx, data, label) {
-        return new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: Object.keys(data),
-                datasets: [{
-                    label: label,
-                    data: Object.values(data),
-                    backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1
+        function applyFilters() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const typeValue = typeFilter.value;
+        const criticalityValue = criticalityFilter.value;
+
+        const filteredData = allRows.filter(row => {
+            const nameMatch = row.dataset.name.toLowerCase().includes(searchTerm);
+            const typeMatch = typeValue === '' || row.dataset.type === typeValue;
+            const criticalityMatch = criticalityValue === '' || row.dataset.criticality === criticalityValue;
+            return nameMatch && typeMatch && criticalityMatch;
+        });
+
+        renderTable(filteredData);
+        }
+
+        function renderTable(filteredRows) {
+        tableBody.innerHTML = '';
+        
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        const paginatedRows = filteredRows.slice(start, end);
+
+        paginatedRows.forEach(row => {
+            tableBody.appendChild(row.cloneNode(true));
+        });
+
+        updatePagination(filteredRows.length);
+        }
+
+        function updatePagination(totalItems) {
+        const totalPages = Math.ceil(totalItems / rowsPerPage);
+        }
+
+        searchInput.addEventListener('input', applyFilters);
+        typeFilter.addEventListener('change', applyFilters);
+        criticalityFilter.addEventListener('change', applyFilters);
+        
+        document.querySelectorAll('.assets-table th[data-sort]').forEach(header => {
+                header.addEventListener('click', function() {
+                    const sortKey = this.getAttribute('data-sort');
+                    const icon = this.querySelector('i');
+                    const isAsc = this.classList.toggle('asc');
+                    
+                    document.querySelectorAll('.assets-table th').forEach(h => {
+                        if (h !== this) {
+                            h.classList.remove('asc', 'desc');
+                            h.querySelector('i').className = 'fas fa-sort';
                         }
-                    }
+                    });
+                    
+                    icon.className = isAsc ? 'fas fa-sort-up' : 'fas fa-sort-down';
+                    this.classList.toggle('desc', !isAsc);
+                    
+                    const tbody = document.querySelector('.assets-table tbody');
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    
+                    rows.sort((a, b) => {
+                        const aValue = a.dataset[sortKey] || '';
+                        const bValue = b.dataset[sortKey] || '';
+                        
+                        if (sortKey === 'created') {
+                            return isAsc ? 
+                                new Date(aValue) - new Date(bValue) : 
+                                new Date(bValue) - new Date(aValue);
+                        } else {
+                            return isAsc ? 
+                                aValue.localeCompare(bValue) : 
+                                bValue.localeCompare(aValue);
+                        }
+                    });
+                    
+                    rows.forEach(row => tbody.appendChild(row));
+                });
+            });
+            
+        function prepareChartData() {
+            const assets = Array.from(document.querySelectorAll('.assets-table tbody tr')).map(row => {
+                return {
+                    type: row.dataset.type,
+                    criticality: row.dataset.criticality,
+                    status: row.dataset.status,
+                    department: row.dataset.department || 'Не указано'
+                };
+            });
+            
+            const types = {};
+            const criticalities = {};
+            const statuses = {};
+            const departments = {};
+            
+            assets.forEach(asset => {
+                types[asset.type] = (types[asset.type] || 0) + 1;
+                criticalities[asset.criticality] = (criticalities[asset.criticality] || 0) + 1;
+                statuses[asset.status] = (statuses[asset.status] || 0) + 1;
+                departments[asset.department] = (departments[asset.department] || 0) + 1;
+            });
+            
+            return { types, criticalities, statuses, departments };
+        }
+
+        function createPieChart(ctx, data, label) {
+            const backgroundColors = [
+                'rgba(54, 162, 235, 0.7)',
+                'rgba(255, 99, 132, 0.7)',
+                'rgba(75, 192, 192, 0.7)',
+                'rgba(255, 159, 64, 0.7)',
+                'rgba(153, 102, 255, 0.7)',
+                'rgba(255, 205, 86, 0.7)'
+            ];
+            
+            return new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        data: Object.values(data),
+                        backgroundColor: backgroundColors.slice(0, Object.keys(data).length),
+                        borderWidth: 1
+                    }]
                 },
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    title: {
-                        display: true,
-                        text: label,
-                        font: {
-                            size: 14
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        title: {
+                            display: true,
+                            text: label,
+                            font: {
+                                size: 14
+                            }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
+
+        function createBarChart(ctx, data, label) {
+            return new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: label,
+                        data: Object.values(data),
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: label,
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function initCharts() {
+        try {
+            const response = await fetch("/assets/json");
+            const assets = await response.json();
+
+            const types = {};
+            const criticalities = {};
+            const statuses = {};
+            const departments = {};
+
+            assets.forEach(asset => {
+                types[asset.type] = (types[asset.type] || 0) + 1;
+                criticalities[asset.criticality] = (criticalities[asset.criticality] || 0) + 1;
+                statuses[asset.status] = (statuses[asset.status] || 0) + 1;
+                departments[asset.department] = (departments[asset.department] || 0) + 1;
+            });
+
+            Chart.getChart('typeChart')?.destroy();
+            Chart.getChart('criticalityChart')?.destroy();
+            Chart.getChart('statusChart')?.destroy();
+            Chart.getChart('departmentChart')?.destroy();
+
+            createPieChart(document.getElementById('typeChart'), types);
+            createPieChart(document.getElementById('criticalityChart'), criticalities);
+            createPieChart(document.getElementById('statusChart'), statuses);
+            createBarChart(document.getElementById('departmentChart'), departments);
+
+        } catch (error) {
+            console.error("Ошибка загрузки данных для графиков:", error);
+        }
     }
 
-    async function initCharts() {
-    try {
-        const response = await fetch("/assets/json");
-        const assets = await response.json();
-
-        const types = {};
-        const criticalities = {};
-        const statuses = {};
-        const departments = {};
-
-        assets.forEach(asset => {
-            types[asset.type] = (types[asset.type] || 0) + 1;
-            criticalities[asset.criticality] = (criticalities[asset.criticality] || 0) + 1;
-            statuses[asset.status] = (statuses[asset.status] || 0) + 1;
-            departments[asset.department] = (departments[asset.department] || 0) + 1;
-        });
-
-        Chart.getChart('typeChart')?.destroy();
-        Chart.getChart('criticalityChart')?.destroy();
-        Chart.getChart('statusChart')?.destroy();
-        Chart.getChart('departmentChart')?.destroy();
-
-        createPieChart(document.getElementById('typeChart'), types);
-        createPieChart(document.getElementById('criticalityChart'), criticalities);
-        createPieChart(document.getElementById('statusChart'), statuses);
-        createBarChart(document.getElementById('departmentChart'), departments);
-
-    } catch (error) {
-        console.error("Ошибка загрузки данных для графиков:", error);
-    }
-}
-
-    initCharts();
+        initCharts();
 
         document.querySelectorAll('.dropdown-item').forEach(item => {
-        item.addEventListener('click', function (e) {
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const format = this.dataset.format;
+                document.getElementById('selectedFormat').value = format;
+
+                const departmentFilter = document.getElementById('assetDepartment');
+                const selectedDepartment = departmentFilter ? departmentFilter.value : "";
+
+                document.getElementById('departmentInput').value = selectedDepartment;
+
+                const modal = new bootstrap.Modal(document.getElementById('reportModal'));
+                modal.show();
+            });
+            });
+
+        document.getElementById('reportForm').addEventListener('submit', function (e) {
             e.preventDefault();
 
-            const format = this.dataset.format;
-            document.getElementById('selectedFormat').value = format;
+            const format = document.getElementById('selectedFormat').value;
+            const department = document.getElementById('departmentInput').value.trim();
 
-            const departmentFilter = document.getElementById('assetDepartment');
-            const selectedDepartment = departmentFilter ? departmentFilter.value : "";
+            let url = `/assets/export/${format}`;
+            if (department !== "") {
+                url += `?department=${encodeURIComponent(department)}`;
+            }
 
-            document.getElementById('departmentInput').value = selectedDepartment;
+            const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
+            modal.hide();
 
-            const modal = new bootstrap.Modal(document.getElementById('reportModal'));
-            modal.show();
-        });
-        });
-
-       document.getElementById('reportForm').addEventListener('submit', function (e) {
-  e.preventDefault();
-
-  const format = document.getElementById('selectedFormat').value;
-  const department = document.getElementById('departmentInput').value.trim();
-
-  let url = `/assets/export/${format}`;
-  if (department !== "") {
-    url += `?department=${encodeURIComponent(department)}`;
-  }
-
-  const modal = bootstrap.Modal.getInstance(document.getElementById('reportModal'));
-  modal.hide();
-
-  setTimeout(() => {
-    window.location.href = url;
-  }, 300);
-});
-    searchInput.addEventListener('input', function() {
-        setTimeout(initCharts, 300);
-    });
-    typeFilter.addEventListener('change', initCharts);
-    criticalityFilter.addEventListener('change', initCharts);
-});
+            setTimeout(() => {
+                window.location.href = url;
+            }, 300);
+            });
+                searchInput.addEventListener('input', function() {
+                    setTimeout(initCharts, 300);
+                });
+                typeFilter.addEventListener('change', initCharts);
+                criticalityFilter.addEventListener('change', initCharts);
+            });
 </script>
 {% endblock %}
 

@@ -1,4 +1,11 @@
 {% extends "base.html" %}
+{% block title %}
+    {% if lang == 'kz' %}
+        Тәуекелдерді бағалау тарихы
+    {% else %}
+        История оценок рисков
+    {% endif %}
+{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
@@ -15,7 +22,6 @@
             </button>
         </form>
         
-
         <div>
             <a href="/risk-assessment/export/excel" class="btn btn-success me-2">
                 <i class="fas fa-file-excel me-1"></i>
@@ -41,8 +47,8 @@
         </div>
     </div>
 
-    <table class="table table-bordered table-striped" id="historyTable">
-        <thead class="table-light">
+    <table class="table table-bordered align-middle text-center" id="historyTable">
+        <thead>
             <tr>
                 <th>ID</th>
                 <th class="lang-text" data-ru="Метод" data-kz="Әдіс">Метод</th>
@@ -61,12 +67,45 @@
             <tr>
                 <td>{{ a.id }}</td>
                 <td>{{ a.method }}</td>
-                <td>{{ a.asset.name_ru if lang == 'ru' else a.asset.name_kz }}</td>
-                <td>{{ a.threat }}</td>
-                <td>{{ a.vulnerability }}</td>
+                <td class="lang-text" 
+                    data-ru="{{ a.asset.name_ru if a.asset.name_ru else a.asset.name }}" 
+                    data-kz="{{ a.asset.name_kz if a.asset.name_kz else a.asset.name }}">
+                    {{ a.asset.name_ru if lang == 'ru' and a.asset.name_ru else a.asset.name_kz if lang == 'kz' and a.asset.name_kz else a.asset.name }}
+                </td>
+                <td class="lang-text" 
+                    data-ru="{{ a.threat_ru }}" 
+                    data-kz="{{ a.threat_kz }}">
+                    {{ a.threat_ru if lang == 'ru' else a.threat_kz }}
+                </td>
+
+                <td>
+                    {% if a.vulnerability == 'weak_pass' %}
+                        <span class="lang-text" data-ru="Слабые пароли" data-kz="Әлсіз құпиясөздер">
+                            {{ "Слабые пароли" if lang == 'ru' else "Әлсіз құпиясөздер" }}
+                        </span>
+                    {% elif a.vulnerability == 'no_encrypt' %}
+                        <span class="lang-text" data-ru="Отсутствие шифрования" data-kz="Шифрлау болмауы">
+                            {{ "Отсутствие шифрования" if lang == 'ru' else "Шифрлау болмауы" }}
+                        </span>
+                    {% elif a.vulnerability == 'old_soft' %}
+                        <span class="lang-text" data-ru="Устаревшее ПО" data-kz="Ескірген бағдарлама">
+                            {{ "Устаревшее ПО" if lang == 'ru' else "Ескірген бағдарлама" }}
+                        </span>
+                    {% elif a.vulnerability == 'misconfig' %}
+                        <span class="lang-text" data-ru="Некорректная настройка" data-kz="Дұрыс емес баптау">
+                            {{ "Некорректная настройка" if lang == 'ru' else "Дұрыс емес баптау" }}
+                        </span>
+                    {% elif a.vulnerability == 'no_backup' %}
+                        <span class="lang-text" data-ru="Отсутствие бэкапов" data-kz="Резервтік көшірмелердің болмауы">
+                            {{ "Отсутствие бэкапов" if lang == 'ru' else "Резервтік көшірмелердің болмауы" }}
+                        </span>
+                    {% else %}
+                        {{ a.vulnerability }}
+                    {% endif %}
+                </td>
                 <td>{{ a.likelihood }}</td>
                 <td>{{ a.impact }}</td>
-                <td>{{ a.score }}</td>
+                <td><strong>{{ a.score }}</strong></td>
                 <td class="lang-text"
                     data-ru="{{ a.level }}"
                     data-kz="{% if a.level == 'Низкий' %}Төмен{% elif a.level == 'Средний' %}Орташа{% elif a.level == 'Высокий' %}Жоғары{% elif a.level == 'Критический' %}Критикалды{% else %}{{ a.level }}{% endif %}">
@@ -78,4 +117,41 @@
         </tbody>
     </table>
 </div>
+{% endblock %}
+
+{% block custom_css %}
+<style>
+    #historyTable {
+        background-color: #f8f9fa;
+    }
+
+    #historyTable thead {
+        background-color: #e9ecef;
+    }
+
+    #historyTable tbody tr td {
+        background-color: #ffffff; 
+    }
+
+    #historyTable tbody tr:hover td {
+        background-color: #f1f1f1; 
+    }
+    
+    .table-bordered {
+        border: 1px solid #dee2e6;
+    }
+    
+    .table-bordered th, 
+    .table-bordered td {
+        border: 1px solid #dee2e6;
+    }
+    
+    .align-middle {
+        vertical-align: middle !important;
+    }
+    
+    .text-center {
+        text-align: center !important;
+    }
+</style>
 {% endblock %}

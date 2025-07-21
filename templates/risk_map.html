@@ -1,0 +1,1309 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if lang == 'kz' %}
+        Тәуекелдер картасы
+    {% else %}
+        Карта рисков
+    {% endif %}
+{% endblock %}
+
+
+{% block custom_css %}
+    <style>
+        .risk-matrix-container {
+            background-color: white;
+            border-radius: 6px;
+            padding: 6rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 1rem;
+        }
+        
+        .matrix-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .matrix-title {
+            font-size: 1.5rem;
+            color: var(--irmap-blue);
+            font-weight: 600;
+        }
+        
+        .matrix-controls {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .risk-matrix {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1px;
+            background-color: #ddd;
+            border: 1px solid #ddd;
+        }
+        
+        .matrix-cell {
+            background-color: white;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        .matrix-cell:hover {
+            transform: scale(1.05);
+            z-index: 1;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .cell-label {
+            font-size: 0.7rem;
+            color: #666;
+            margin-bottom: 0.3rem;
+        }
+        
+        .cell-count {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .risk-low {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .risk-medium {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+        }
+        
+        .risk-high {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .risk-critical {
+            background-color: #dc3545;
+            border: 2px solid #c82333;
+            color: white;
+        }
+        
+        .risk-critical .cell-label {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .risk-filters {
+            background-color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+        }
+        
+        .filter-row {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--irmap-dark);
+        }
+        
+        .risk-table {
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+        
+        .table-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-title {
+            font-size: 1.25rem;
+            color: var(--irmap-blue);
+            font-weight: 600;
+        }
+        
+        .risk-priority {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .priority-low {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .priority-medium {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .priority-high {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .priority-critical {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .risk-details-btn {
+            background: none;
+            border: none;
+            color: var(--irmap-blue);
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .risk-matrix {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .matrix-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">
+                <span class="lang-text" data-ru="Карта рисков" data-kz="Тәуекел картасы">Карта рисков</span>
+            </h1>
+            <p class="text-muted">
+                <span class="lang-text" 
+                      data-ru="Визуализация рисков в виде тепловой карты/матрицы. Показывает приоритеты для реагирования."
+                      data-kz="Тәуекелдерді жылу картасы/матрицасы түрінде көрсету. Жауап беру үшін басымдықтарды көрсетеді.">
+                    Визуализация рисков в виде тепловой карты/матрицы. Показывает приоритеты для реагирования.
+                </span>
+            </p>
+        </div>
+        
+        <div class="risk-filters">
+            <h5>
+                <span class="lang-text" data-ru="Фильтры" data-kz="Сүзгілер">Фильтры</span>
+            </h5>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">
+                      <span class="lang-text" data-ru="Бизнес-процесс" data-kz="Бизнес-процесс">Бизнес-процесс</span>
+                    </label>                  
+                    {% set department_map = {
+                        'it отдел': {'ru': 'IT отдел', 'kz': 'IT бөлімі'},
+                        'it бөлімі': {'ru': 'IT отдел', 'kz': 'IT бөлімі'},
+                        'бухгалтерия': {'ru': 'Бухгалтерия', 'kz': 'Бухгалтерия'},
+                        'отдел продаж': {'ru': 'Отдел продаж', 'kz': 'Сату бөлімі'},
+                        'сату бөлімі': {'ru': 'Отдел продаж', 'kz': 'Сату бөлімі'},
+                        'маркетинг': {'ru': 'Маркетинг', 'kz': 'Маркетинг'},
+                        'финансовый отдел': {'ru': 'Финансовый отдел', 'kz': 'Қаржы бөлімі'},
+                        'қаржы бөлімі': {'ru': 'Финансовый отдел', 'kz': 'Қаржы бөлімі'},
+                        'администрация': {'ru': 'Администрация', 'kz': 'Әкімшілік'},
+                        'әкімшілік': {'ru': 'Администрация', 'kz': 'Әкімшілік'},
+                        'служба поддержка': {'ru': 'Служба поддержка', 'kz': 'Қолдау қызметі'},
+                        'қолдау қызметі': {'ru': 'Служба поддержка', 'kz': 'Қолдау қызметі'}
+                    } %}                  
+                    {% set added_keys = [] %}
+                    <select id="filter-department" class="form-select">
+                      <option value="" class="lang-text" data-ru="Все подразделения" data-kz="Барлық бөлімдер">
+                        {{ 'Все подразделения' if lang == 'ru' else 'Барлық бөлімдер' }}
+                      </option>                  
+                      {% for risk in risks %}
+                        {% set key = risk.department.strip()|lower %}
+                        {% if key in department_map and key not in added_keys %}
+                          {% set _ = added_keys.append(key) %}
+                          <option value="{{ key }}"
+                                  class="lang-text"
+                                  data-ru="{{ department_map[key]['ru'] }}"
+                                  data-kz="{{ department_map[key]['kz'] }}">
+                            {{ department_map[key][lang] }}
+                          </option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>                                                                                    
+                
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="lang-text" data-ru="Тип риска" data-kz="Тәуекел түрі">Тип риска</span>
+                    </label>
+                    {% set type_options = {} %}
+                    {% for risk in risks %}
+                        {% set key = risk.title.strip().lower() %}
+                        {% if key not in type_options %}
+                            {% set _ = type_options.update({key: (risk.title, risk.title_kz)}) %}
+                        {% endif %}
+                    {% endfor %}
+                    <select id="filter-risk-type" class="form-select">
+                        <option value="" class="lang-text" data-ru="Все типы" data-kz="Барлық түрлер">Все типы</option>
+                    
+                        {% for key, (ru, kz) in type_options.items() %}
+                            <option value="{{ key }}"
+                                    class="lang-text"
+                                    data-ru="{{ ru }}"
+                                    data-kz="{{ kz }}">
+                                {{ ru if lang == 'ru' else kz }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                                     
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="lang-text" data-ru="Статус" data-kz="Статустар">Статус</span>
+                    </label>
+                    {% set status_map = {
+                        'новый': {'ru': 'Новый', 'kz': 'Жаңа'},
+                        'жаңа': {'ru': 'Новый', 'kz': 'Жаңа'},
+                        'в работе': {'ru': 'В работе', 'kz': 'Жұмыс барысында'},
+                        'жұмыс барысында': {'ru': 'В работе', 'kz': 'Жұмыс барысында'},
+                        'снижен': {'ru': 'Снижен', 'kz': 'Азайтылған'},
+                        'азайтылған': {'ru': 'Снижен', 'kz': 'Азайтылған'},
+                        'закрыт': {'ru': 'Закрыт', 'kz': 'Жабық'},
+                        'жабық': {'ru': 'Закрыт', 'kz': 'Жабық'}
+                    } %}                                     
+                    {% set unique_statuses = {} %}
+                    {% for risk in risks %}
+                        {% set key = risk.status.strip()|lower %}
+                        {% if key in status_map %}
+                            {% set display = status_map[key][lang] %}
+                            {% if display not in unique_statuses %}
+                                {% set _ = unique_statuses.update({display: key}) %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}                                     
+                    <select id="filter-status" class="form-select">
+                        <option value="" class="lang-text" data-ru="Все статусы" data-kz="Барлық статустар">
+                          {{ 'Все статусы' if lang == 'ru' else 'Барлық статустар' }}
+                        </option>
+                        {% for display, key in unique_statuses.items() %}
+                          <option value="{{ key }}"
+                                  class="lang-text"
+                                  data-ru="{{ status_map[key]['ru'] }}"
+                                  data-kz="{{ status_map[key]['kz'] }}">
+                            {{ status_map[key][lang] }}
+                          </option>
+                        {% endfor %}
+                      </select>
+                                                                            
+                </div>                              
+            </div>
+            
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="lang-text" data-ru="Приоритет" data-kz="Басымдық">Приоритет</span>
+                    </label>                
+                    {% set priority_map = {
+                        'низкий': {'ru': 'Низкий', 'kz': 'Төмен'},
+                        'төмен': {'ru': 'Низкий', 'kz': 'Төмен'},
+                        'средний': {'ru': 'Средний', 'kz': 'Орташа'},
+                        'орташа': {'ru': 'Средний', 'kz': 'Орташа'},
+                        'высокий': {'ru': 'Высокий', 'kz': 'Жоғары'},
+                        'жоғары': {'ru': 'Высокий', 'kz': 'Жоғары'},
+                        'критический': {'ru': 'Критический', 'kz': 'Шұғыл'},
+                        'шұғыл': {'ru': 'Критический', 'kz': 'Шұғыл'}
+                    } %}                
+                    {% set unique_priorities = {} %}
+                    {% for risk in risks %}
+                        {% set key = risk.priority.strip()|lower %}
+                        {% if key in priority_map %}
+                            {% set display = priority_map[key][lang] %}
+                            {% if display not in unique_priorities %}
+                                {% set _ = unique_priorities.update({display: key}) %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}                
+                    <select id="filter-priority" class="form-select">
+                        <option value="">
+                          <span class="lang-text" data-ru="Все приоритеты" data-kz="Барлық басымдықтар">
+                            Все приоритеты
+                          </span>
+                        </option>
+                        {% for display, key in unique_priorities.items() %}
+                          <option value="{{ key }}" 
+                                  class="lang-text" 
+                                  data-ru="{{ priority_map[key]['ru'] }}" 
+                                  data-kz="{{ priority_map[key]['kz'] }}">
+                            {{ priority_map[key][lang] }}
+                          </option>
+                        {% endfor %}
+                      </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="lang-text" data-ru="Дата от" data-kz="Күні бастап">Дата от</span>
+                    </label>
+                    <input type="date" id="filter-date-from" class="form-control">
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <span class="lang-text" data-ru="Дата до" data-kz="Күні дейін">Дата до</span>
+                    </label>
+                    <input type="date" id="filter-date-to" class="form-control">
+                </div>
+                
+                <div class="filter-group d-flex align-items-end">
+                    <button id="applyFilters" class="btn btn-primary ">
+                        <span class="lang-text" data-ru="Применить" data-kz="Қолдану">Применить</span>
+                    </button>
+                    <button id="resetFilters" class="btn btn-outline-secondary ms-2">
+                        <span class="lang-text" data-ru="Сбросить" data-kz="Қалпына келтіру">Сбросить</span>
+                    </button>                    
+                </div>
+            </div>
+        </div>
+        
+        <div class="risk-matrix-container">
+            <div class="matrix-header">
+                <h3 class="matrix-title">
+                    <span class="lang-text" data-ru="Матрица рисков" data-kz="Тәуекел матрицасы">Матрица рисков</span>
+                </h3>
+                <div class="matrix-controls">
+                   <button id="exportExcel" class="btn btn-outline-success">
+                    <i class="fas fa-file-excel me-1"></i>
+                    <span class="lang-text" data-ru="Экспорт в Excel" data-kz="Excel-ге экспорт">Excel</span>
+                    </button>
+                    <button id="exportPDF" class="btn btn-outline-danger">
+                    <i class="fas fa-file-PDF me-1"></i>
+                    <span class="lang-text" data-ru="Экспорт в PDF" data-kz="PDF-ке экспорт">PDF</span>
+                    </button>
+
+                </div>
+            </div>
+            
+            <div class="risk-matrix">
+                <div class="matrix-cell risk-low">
+                    <div class="cell-label">
+                        <span class="lang-text" data-ru="Низкий" data-kz="Төмен">Низкий</span>
+                    </div>
+                    <div class="cell-count">2</div>
+                </div>
+                <div class="matrix-cell risk-low">
+                    <div class="cell-label">
+                        <span class="lang-text" data-ru="Низкий" data-kz="Төмен">Низкий</span>
+                    </div>
+                    <div class="cell-count">1</div>
+                </div>
+                <div class="matrix-cell risk-medium">
+                    <div class="cell-label">
+                        <span class="lang-text" data-ru="Средний" data-kz="Орташа">Средний</span>
+                    </div>
+                    <div class="cell-count">3</div>
+                </div>
+                <div class="matrix-cell risk-high">
+                    <div class="cell-label">
+                        <span class="lang-text" data-ru="Высокий" data-kz="Жоғары">Высокий</span>
+                    </div>
+                    <div class="cell-count">5</div>
+                </div>
+                <div class="matrix-cell risk-critical">
+                    <div class="cell-label">
+                        <span class="lang-text" data-ru="Критический" data-kz="Критикалық">Критический</span>
+                    </div>
+                    <div class="cell-count">7</div>
+                </div>
+                
+                <div class="matrix-cell risk-low">
+                    <div class="cell-count">1</div>
+                </div>
+                <div class="matrix-cell risk-medium">
+                    <div class="cell-count">4</div>
+                </div>
+                <div class="matrix-cell risk-medium">
+                    <div class="cell-count">6</div>
+                </div>
+                <div class="matrix-cell risk-high">
+                    <div class="cell-count">8</div>
+                </div>
+                <div class="matrix-cell risk-critical">
+                    <div class="cell-count">10</div>
+                </div>
+                
+                <div class="matrix-cell risk-medium">
+                    <div class="cell-count">3</div>
+                </div>
+                <div class="matrix-cell risk-medium">
+                    <div class="cell-count">5</div>
+                </div>
+                <div class="matrix-cell risk-high">
+                    <div class="cell-count">7</div>
+                </div>
+                <div class="matrix-cell risk-high">
+                    <div class="cell-count">9</div>
+                </div>
+                <div class="matrix-cell risk-critical">
+                    <div class="cell-count">12</div>
+                </div>
+                
+                <div class="matrix-cell risk-high">
+                    <div class="cell-count">5</div>
+                </div>
+                <div class="matrix-cell risk-high">
+                    <div class="cell-count">7</div>
+                </div>
+                <div class="matrix-cell risk-high">
+                    <div class="cell-count">9</div>
+                </div>
+                <div class="matrix-cell risk-critical">
+                    <div class="cell-count">11</div>
+                </div>
+                <div class="matrix-cell risk-critical">
+                    <div class="cell-count">15</div>
+                </div>
+                
+                <div class="matrix-cell risk-high">
+                    <div class="cell-label">
+                        <span class="lang-text" data-ru="Высокий" data-kz="Жоғары">Высокий</span>
+                    </div>
+                    <div class="cell-count">8</div>
+                </div>
+                <div class="matrix-cell risk-critical">
+                    <div class="cell-count">10</div>
+                </div>
+                <div class="matrix-cell risk-critical">
+                    <div class="cell-count">12</div>
+                </div>
+                <div class="matrix-cell risk-critical">
+                    <div class="cell-count">14</div>
+                </div>
+                <div class="matrix-cell risk-critical">
+                    <div class="cell-label">
+                        <span class="lang-text" data-ru="Критический" data-kz="Критикалық">Критический</span>
+                    </div>
+                    <div class="cell-count">18</div>
+                </div>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color risk-low"></div>
+                    <span class="lang-text" data-ru="Низкий риск" data-kz="Төмен тәуекел">Низкий риск</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color risk-medium"></div>
+                    <span class="lang-text" data-ru="Средний риск" data-kz="Орташа тәуекел">Средний риск</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color risk-high"></div>
+                    <span class="lang-text" data-ru="Высокий риск" data-kz="Жоғары тәуекел">Высокий риск</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color risk-critical"></div>
+                    <span class="lang-text" data-ru="Критический риск" data-kz="Критикалық тәуекел">Критический риск</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="risk-table">
+            <div class="table-header">
+                <h4 class="table-title">
+                    <span class="lang-text" data-ru="Список рисков" data-kz="Тәуекелдер тізімі">Список рисков</span>
+                </h4>
+                <div>
+                    <button class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus me-1"></i>
+                        <span class="lang-text" data-ru="Добавить риск" data-kz="Тәуекелді қосу">Добавить риск</span>
+                    </button>
+                </div>
+            </div>            
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                      <tr>                
+                        <th><span class="lang-text" data-ru="ID" data-kz="ID">ID</span></th>
+                        <th><span class="lang-text" data-ru="Подразделение" data-kz="Бөлім">Подразделение</span></th>
+                        <th><span class="lang-text" data-ru="Название" data-kz="Атауы">Название</span></th>
+                        <th><span class="lang-text" data-ru="Вероятность" data-kz="Ықтималдығы">Вероятность</span></th>
+                        <th><span class="lang-text" data-ru="Влияние" data-kz="Әсері">Влияние</span></th>
+                        <th><span class="lang-text" data-ru="Приоритет" data-kz="Басымдық">Приоритет</span></th>
+                        <th><span class="lang-text" data-ru="Статус" data-kz="Статус">Статус</span></th>
+                        <th><span class="lang-text" data-ru="Дата" data-kz="Күні">Дата</span></th>
+                        <th><span class="lang-text" data-ru="Действия" data-kz="Әрекеттер">Действия</span></th>
+                    </tr>
+                    </thead>
+                    <tbody id="risk-table-body">
+                        {% set lang = lang or 'ru' %}
+                        {% set priority_map = {
+                            'низкий': {'ru': 'Низкий', 'kz': 'Төмен'},
+                            'төмен': {'ru': 'Низкий', 'kz': 'Төмен'},
+                            'средний': {'ru': 'Средний', 'kz': 'Орташа'},
+                            'орташа': {'ru': 'Средний', 'kz': 'Орташа'},
+                            'высокий': {'ru': 'Высокий', 'kz': 'Жоғары'},
+                            'жоғары': {'ru': 'Высокий', 'kz': 'Жоғары'},
+                            'критический': {'ru': 'Критический', 'kz': 'Шұғыл'},
+                            'шұғыл': {'ru': 'Критический', 'kz': 'Шұғыл'}
+                        } %}
+                        
+                        {% set department_map = {
+                            'it отдел': {'ru': 'IT отдел', 'kz': 'IT бөлімі'},
+                            'it бөлімі': {'ru': 'IT отдел', 'kz': 'IT бөлімі'},
+                        
+                            'бухгалтерия': {'ru': 'Бухгалтерия', 'kz': 'Бухгалтерия'},
+                        
+                            'отдел продаж': {'ru': 'Отдел продаж', 'kz': 'Сату бөлімі'},
+                            'сату бөлімі': {'ru': 'Отдел продаж', 'kz': 'Сату бөлімі'},
+                        
+                            'маркетинг': {'ru': 'Маркетинг', 'kz': 'Маркетинг'},
+                        
+                            'финансовый отдел': {'ru': 'Финансовый отдел', 'kz': 'Қаржы бөлімі'},
+                            'қаржы бөлімі': {'ru': 'Финансовый отдел', 'kz': 'Қаржы бөлімі'},
+                        
+                            'администрация': {'ru': 'Администрация', 'kz': 'Әкімшілік'},
+                            'әкімшілік': {'ru': 'Администрация', 'kz': 'Әкімшілік'},
+                        
+                            'служба поддержка': {'ru': 'Служба поддержка', 'kz': 'Қолдау қызметі'},
+                            'қолдау қызметі': {'ru': 'Служба поддержка', 'kz': 'Қолдау қызметі'}
+                        } %}
+                        
+                        {% set status_map = {
+                            'новый': {'ru': 'Новый', 'kz': 'Жаңа'},
+                            'жаңа': {'ru': 'Новый', 'kz': 'Жаңа'},
+                            'в работе': {'ru': 'В работе', 'kz': 'Жұмыс барысында'},
+                            'жұмыс барысында': {'ru': 'В работе', 'kz': 'Жұмыс барысында'},
+                            'снижен': {'ru': 'Снижен', 'kz': 'Азайтылған'},
+                            'азайтылған': {'ru': 'Снижен', 'kz': 'Азайтылған'},
+                            'закрыт': {'ru': 'Закрыт', 'kz': 'Жабық'},
+                            'жабық': {'ru': 'Закрыт', 'kz': 'Жабық'}
+                        } %}                       
+                    
+                        {% for risk in risks %}
+                            {% set priority_key = risk.priority.strip()|lower %}
+                            {% set department_key = risk.department.strip()|lower %}
+                            {% set status_key = risk.status.strip()|lower %}
+                    
+                            {# Определяем переводы #}
+                            {% if priority_key in priority_map and lang in priority_map[priority_key] %}
+                                {% set translated_priority = priority_map[priority_key][lang] %}
+                            {% else %}
+                                {% set translated_priority = risk.priority %}
+                            {% endif %}
+
+                            {% if department_key in department_map and lang in department_map[department_key] %}
+                                {% set translated_department = department_map[department_key][lang] %}
+                            {% else %}
+                                {% set translated_department = risk.department %}
+                            {% endif %}
+                    
+                            {% if status_key in status_map and lang in status_map[status_key] %}
+                                {% set translated_status = status_map[status_key][lang] %}
+                            {% else %}
+                                {% set translated_status = risk.status %}
+                            {% endif %}
+                    
+                            {% if priority_key in ['низкий', 'төмен'] %}
+                            {% set priority_class = 'low' %}
+                          {% elif priority_key in ['средний', 'орташа'] %}
+                            {% set priority_class = 'medium' %}
+                          {% elif priority_key in ['высокий', 'жоғары'] %}
+                            {% set priority_class = 'high' %}
+                          {% elif priority_key in ['критический', 'шұғыл', 'сындарлы'] %}
+                            {% set priority_class = 'critical' %}
+                          {% else %}
+                            {% set priority_class = 'medium' %}
+                          {% endif %}  
+                    
+                            <tr 
+                                data-id="{{ risk.id }}"
+                                data-department="{{ translated_department }}"
+                                data-title="{{ risk.title }}"
+                                data-title-kz="{{ risk.title_kz }}"                                
+                                data-likelihood="{{ risk.likelihood }}"
+                                data-impact="{{ risk.impact }}"
+                                data-priority="{{ translated_priority }}"
+                                data-status="{{ translated_status }}"
+                                data-created-at="{{ risk.created_at.strftime('%Y-%m-%d')}}">
+                                
+                                <td>RISK-{{ "%03d"|format(risk.id) }}</td>
+                                <td class="lang-text"
+                                    data-ru="{{ department_map.get(risk.department.strip().lower(), {}).get('ru', risk.department) }}"
+                                    data-kz="{{ department_map.get(risk.department.strip().lower(), {}).get('kz', risk.department) }}">
+                                    {{ department_map.get(risk.department.strip().lower(), {}).get(lang, risk.department) }}
+                                </td>                                
+                                <td class="lang-text" data-ru="{{ risk.title }}" data-kz="{{ risk.title_kz }}">
+                                    {{ risk.title }}
+                                </td>
+                    
+                                <td>{{ risk.likelihood }}</td>
+                                <td>{{ risk.impact }}</td>
+                    
+                                <td>
+                                    <span class="lang-text risk-priority priority-{{ priority_class }}"
+                                          data-ru="{{ priority_map.get(priority_key, {}).get('ru', risk.priority) }}"
+                                          data-kz="{{ priority_map.get(priority_key, {}).get('kz', risk.priority) }}">
+                                      {{ translated_priority }}
+                                    </span>
+                                  </td>
+                    
+                                <td class="lang-text status-cell"
+                                    data-ru="{{ status_map.get(status_key, {}).get('ru', risk.status) }}"
+                                    data-kz="{{ status_map.get(status_key, {}).get('kz', risk.status) }}">
+                                    {{ translated_status }}
+                                </td>
+                    
+                                <td>{{ risk.created_at.strftime('%d.%m.%Y') }}</td>
+                    
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary btn-edit"
+                                            data-id="{{ risk.id }}"
+                                            title="Изменить / Өзгерту"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editRiskModal">
+                                        <i class="fas fa-edit" data-ru-title="Редактировать" data-kz-title="Өңдеу"></i>
+                                    </button>
+                    
+                                    <button class="btn btn-sm btn-outline-danger risk-delete-btn"
+                                            data-id="{{ risk.id }}"
+                                            data-ru-title="Удалить"
+                                            data-kz-title="Жою"
+                                            title="{{ 'Жою' if lang == 'kz' else 'Удалить' }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>                   
+                </table>                 
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="addRiskModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="addRiskForm">
+                <div class="modal-header">
+                    <h5 class="modal-title lang-text" data-ru="Добавить риск" data-kz="Тәуекелді қосу">Добавить риск</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                    <label class="form-label lang-text" data-ru="Название на русском*" data-kz="Орысша атауы*">Название на русском*</label>
+                    <input type="text" class="form-control" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label lang-text" data-ru="Название на казахском*" data-kz="Қазақша атауы*">Название на казахском*</label>
+                        <input type="text" class="form-control" name="title_kz" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label lang-text" data-ru="Подразделение*" data-kz="Бөлім*">Подразделение*</label>
+                        <select id="risk-department" name="department" class="form-select">
+                        <option value="IT отдел" class="lang-text" data-ru="IT отдел" data-kz="IT бөлімі">IT отдел</option>
+                        <option value="Бухгалтерия" class="lang-text" data-ru="Бухгалтерия" data-kz="Бухгалтерия">Бухгалтерия</option>
+                        <option value="Отдел продаж" class="lang-text" data-ru="Отдел продаж" data-kz="Сату бөлімі">Отдел продаж</option>
+                        <option value="Маркетинг" class="lang-text" data-ru="Маркетинг" data-kz="Маркетинг">Маркетинг</option>
+                        <option value="Финансовый отдел" class="lang-text" data-ru="Финансовый отдел" data-kz="Қаржы бөлімі">Финансовый отдел</option>
+                        <option value="Администрация" class="lang-text" data-ru="Администрация" data-kz="Әкімшілік">Администрация</option>
+                        <option value="Служба поддержка" class="lang-text" data-ru="Служба поддержка" data-kz="Қолдау қызметі">Служба поддержка</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                    <label class="form-label lang-text" data-ru="Вероятность*" data-kz="Ықтималдығы*">Вероятность*</label>
+                    <input type="number" class="form-control" name="likelihood" min="1" max="5" required>
+                    </div>
+                    <div class="mb-3">
+                    <label class="form-label lang-text" data-ru="Влияние*" data-kz="Әсері*">Влияние*</label>
+                    <input type="number" class="form-control" name="impact" min="1" max="5" required>
+                    </div>
+                    <div class="mb-3">
+                    <label class="form-label lang-text" data-ru="Приоритет*" data-kz="Басымдылық*">Приоритет*</label>
+                        <select class="form-select" name="priority" required>
+                            <option class="lang-text" data-ru="Критический" data-kz="Шұғыл">Критический</option>
+                            <option class="lang-text" data-ru="Высокий" data-kz="Жоғары">Высокий</option>
+                            <option class="lang-text" data-ru="Средний" data-kz="Орташа">Средний</option>
+                            <option class="lang-text" data-ru="Низкий" data-kz="Төмен">Низкий</option>
+                        </select>
+                    </div>    
+                    <div class="mb-3">    
+                        <label class="form-label lang-text" data-ru="Статус*" data-kz="Статусы*">Статус*</label>        
+                        <select class="form-select" name="status" required>
+                            <option class="lang-text" data-ru="Новый" data-kz="Жаңа">Новый</option>
+                            <option class="lang-text" data-ru="В работе" data-kz="Жұмыс барысында">В работе</option>
+                            <option class="lang-text" data-ru="Снижен" data-kz="Азайтылған">Снижен</option>
+                            <option class="lang-text" data-ru="Закрыт" data-kz="Жабық">Закрыт</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary lang-text" data-ru="Сохранить" data-kz="Сақтау">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                </div>
+                </form>
+            </div>
+            </div>
+    </div>
+    <div class="modal fade" id="editRiskModal" tabindex="-1" aria-labelledby="editRiskModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <form id="edit-risk-form">
+                    <div class="modal-header">
+                    <h5 class="modal-title lang-text" id="editRiskModalLabel"
+                        data-ru="Редактировать риск" data-kz="Тәуекелді өзгерту">
+                        Редактировать риск
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                    <p id="edit-risk-info" class="text-muted small"></p>
+                    <input type="hidden" id="edit-risk-id" name="risk_id">
+                    <div class="mb-3">
+                        <label for="edit-risk-title" class="form-label lang-text"
+                            data-ru="Название" data-kz="Атауы">Название</label>
+                        <input type="text" class="form-control" id="edit-risk-title" name="title" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-risk-department" class="form-label lang-text"
+                            data-ru="Подразделение" data-kz="Бөлім">Подразделение</label>
+                        <input type="text" class="form-control" id="edit-risk-department" name="title" disabled>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-risk-likelihood" class="form-label lang-text"
+                            data-ru="Вероятность" data-kz="Ықтималдық">Вероятность</label>
+                        <input type="number" class="form-control" id="edit-risk-likelihood" name="likelihood" min="1" max="5" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-risk-impact" class="form-label lang-text"
+                            data-ru="Влияние" data-kz="Әсері">Влияние</label>
+                        <input type="number" class="form-control" id="edit-risk-impact"  name="impact" min="1" max="5" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label lang-text" data-ru="Приоритет" data-kz="Басымдық">Приоритет</label>
+                                <select class="form-select" name="priority" required>
+                                    <option class="lang-text" data-ru="Критический" data-kz="Критикалық">Критический</option>
+                                    <option class="lang-text" data-ru="Высокий" data-kz="Жоғары">Высокий</option>
+                                    <option class="lang-text" data-ru="Средний" data-kz="Орташа">Средний</option>
+                                    <option class="lang-text" data-ru="Низкий" data-kz="Төмен">Низкий</option>
+                                </select>
+                                </div>
+                    <div class="mb-3">
+                        <label for="edit-risk-status" class="form-label lang-text"
+                            data-ru="Статус" data-kz="Мәртебесі">Статус</label>
+                            <select class="form-select" id="edit-risk-status" name="status" required>
+                                <option class="lang-text" data-ru="Новый" data-kz="Жаңа">Новый</option>
+                                <option class="lang-text" data-ru="В работе" data-kz="Жұмыс барысында">В работе</option>
+                                <option class="lang-text" data-ru="Снижен" data-kz="Азайтылған">Снижен</option>
+                                <option class="lang-text" data-ru="Закрыт" data-kz="Жабық">Закрыт</option>
+                            </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit-risk-created-at" class="form-label lang-text"
+                            data-ru="Дата создания" data-kz="Құрылған күні">Дата</label>
+                        <input type="text" class="form-control" id="edit-risk-created-at" name="created_at" disabled>
+                    </div>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary lang-text"
+                            data-bs-dismiss="modal"
+                            data-ru="Отмена" data-kz="Бас тарту">Отмена</button>
+                    <button type="submit" id="submitRiskBtn" class="btn btn-primary lang-text"
+                            data-ru="Сохранить" data-kz="Сақтау">Сохранить</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+    </div>      
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>        
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll(".btn-edit").forEach(function (button) {
+                button.addEventListener("click", function () {
+                    const tr = button.closest("tr");
+                    if (!tr) return;
+
+                    const lang = document.documentElement.lang; 
+
+                    console.log("Редактирование риска:", tr.dataset);
+
+                    document.getElementById("edit-risk-id").value = tr.dataset.id || "";
+                    document.getElementById("edit-risk-title").value = lang === "kz" ? tr.dataset.titleKz || "" : tr.dataset.title || "";
+                    document.getElementById("edit-risk-department").value = tr.dataset.department || "";
+                    document.getElementById("edit-risk-likelihood").value = tr.dataset.likelihood || "";
+                    document.getElementById("edit-risk-impact").value = tr.dataset.impact || "";
+                    document.querySelector("#edit-risk-form select[name='priority']").value = tr.dataset.priority || "";
+                    document.getElementById("edit-risk-status").value = tr.dataset.status || "";
+                    document.getElementById("edit-risk-created-at").value = tr.dataset.createdAt || "";
+                });
+            });
+
+            const applyBtn = document.getElementById('applyFilters');
+            const resetBtn = document.getElementById('resetFilters');
+
+            const typeSelect = document.getElementById('filter-risk-type');
+            const departmentSelect = document.getElementById("filter-department");
+            const statusSelect = document.getElementById('filter-status');
+            const prioritySelect = document.getElementById('filter-priority');
+            const dateFrom = document.getElementById('filter-date-from');
+            const dateTo = document.getElementById('filter-date-to');
+
+            const messages = {
+                success: {
+                    ru: 'Фильтр успешно применён!',
+                    kz: 'Сүзгі сәтті қолданылды!',
+                },
+                error: {
+                    ru: 'Ошибка при фильтрации рисков!',
+                    kz: 'Тәуекелдерді сүзу кезінде қате пайда болды!',
+                },
+                reset: {
+                    ru: 'Фильтры сброшены!',
+                    kz: 'Сүзгілер тазартылды!',
+                }
+            };
+
+            const currentLang = document.documentElement.lang || 'ru';
+
+            applyBtn.addEventListener('click', async function () {
+                const lang = document.documentElement.lang || 'ru';
+
+                const filters = {
+                    type: typeSelect?.value?.toLowerCase() || '',
+                    department: departmentSelect?.value?.toLowerCase() || '',
+                    status: statusSelect?.value?.toLowerCase() || '',
+                    priority: prioritySelect?.value?.toLowerCase() || '',
+                    dateFrom: dateFrom?.value || '',
+                    dateTo: dateTo?.value || '',               
+                };
+
+
+            try {
+                const response = await fetch(`/api/risk-list?lang=${lang}`);
+                const risks = await response.json();
+
+                const filteredRisks = risks.filter(risk => {
+                    const riskStatus = (risk.status || '').toLowerCase();
+                    const riskPriority = (risk.priority || '').toLowerCase();
+                    const riskDate = risk.created_at?.split("T")[0]; 
+
+                    const riskDepartment = (risk.department || '').toLowerCase();
+                    const riskTitle = ((lang === 'kz' ? risk.title_kz : risk.title) || '').toLowerCase();
+
+                    let ok = true;
+                    if (filters.status && riskStatus !== filters.status) ok = false;
+                    if (filters.priority && riskPriority !== filters.priority) ok = false;
+                    if (filters.dateFrom && riskDate < filters.dateFrom) ok = false;
+                    if (filters.dateTo && riskDate > filters.dateTo) ok = false;
+                    if (filters.type && !riskTitle.includes(filters.type)) ok = false;
+                    if (filters.department && riskDepartment !== filters.department) ok = false;
+                    return ok;
+                });
+
+
+                updateRiskTable(filteredRisks); 
+                updateRiskMatrixFromData(filteredRisks);
+
+                            
+                } catch (error) {
+                    console.error('Ошибка получения или фильтрации рисков:', error);
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: messages.error[currentLang],
+                        text: error.message || '',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+
+            resetBtn.addEventListener('click', function () {
+                departmentSelect.value = '';
+                typeSelect.value = '';
+                statusSelect.value = '';
+                prioritySelect.value = '';
+                dateFrom.value = '';
+                dateTo.value = '';
+
+                Swal.fire({
+                icon: 'info',
+                title: messages.reset[currentLang],
+                timer: 1500,
+                showConfirmButton: false
+            });
+
+            });
+
+            function getPriorityClass(priorityKey) {
+                const key = (priorityKey || '').toLowerCase();
+                if (['низкий', 'төмен'].includes(key)) return 'low';
+                if (['средний', 'орташа'].includes(key)) return 'medium';
+                if (['высокий', 'жоғары'].includes(key)) return 'high';
+                if (['критический', 'шұғыл', 'сындарлы'].includes(key)) return 'critical';
+                return 'medium'; 
+            }
+
+            function updateRiskTable(risks) {
+                console.log('Обновляем таблицу с рисками:', risks);
+
+                const tableBody = document.querySelector('#risk-table-body'); 
+                tableBody.innerHTML = ''; 
+
+                risks.forEach(risk => {
+                    const row = document.createElement('tr');
+                    row.setAttribute('data-id', risk.id);
+                    row.setAttribute('data-department', risk.department || '');
+                    row.setAttribute('data-title', risk.title || '');
+                    row.setAttribute('data-title-kz', risk.title_kz || '');
+                    row.setAttribute('data-likelihood', risk.likelihood);
+                    row.setAttribute('data-impact', risk.impact);
+                    row.setAttribute('data-priority', risk.priority);
+                    row.setAttribute('data-status', risk.status);
+                    row.setAttribute('data-created-at', (risk.created_at || '').split('T')[0]);
+
+                    const priorityClass = getPriorityClass(risk.priority);
+
+                    row.innerHTML = `
+                        <td>RISK-${String(risk.id).padStart(3, '0')}</td>
+                        <td class="lang-text" data-ru="${risk.department || ''}" data-kz="${risk.department || ''}">
+                            ${risk.department || ''}
+                        </td>
+                        <td class="lang-text" data-ru="${risk.title}" data-kz="${risk.title_kz || risk.title}">
+                            ${risk.title}
+                        </td>
+                        <td>${risk.likelihood}</td>
+                        <td>${risk.impact}</td>
+                        <td>
+                            <span class="lang-text risk-priority priority-${priorityClass}"
+                                data-ru="${risk.priority}" data-kz="${risk.original_priority_kz || risk.priority}">
+                                ${risk.priority}
+                            </span>
+                        </td>
+                        <td class="lang-text status-cell" data-ru="${risk.status}" data-kz="${risk.status}">
+                            ${risk.status}
+                        </td>
+                        <td>${(risk.created_at || '').split('T')[0].split('-').reverse().join('.')}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary btn-edit"
+                                    data-id="${risk.id}"
+                                    title="Изменить / Өзгерту"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#editRiskModal">
+                                <i class="fas fa-edit" data-ru-title="Редактировать" data-kz-title="Өңдеу"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger risk-delete-btn"
+                                    data-id="${risk.id}"
+                                    data-ru-title="Удалить"
+                                    data-kz-title="Жою"
+                                    title="Удалить / Жою">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+
+                    tableBody.appendChild(row);
+                });
+                    const lang = localStorage.getItem('preferredLanguage') || 'ru';
+                    switchLanguage(lang);
+            }
+
+            function updateRiskMatrixFromData(risks) {
+                const matrixCells = document.querySelectorAll('.matrix-cell .cell-count');
+                matrixCells.forEach(cell => cell.textContent = '0');
+
+                risks.forEach(risk => {
+                    const likelihood = risk.likelihood;
+                    const impact = risk.impact;
+
+                    if (likelihood >= 1 && likelihood <= 5 && impact >= 1 && impact <= 5) {
+                        const index = (likelihood - 1) * 5 + (impact - 1);
+                        const cell = document.querySelectorAll('.matrix-cell')[index];
+                        const countEl = cell.querySelector('.cell-count');
+                        countEl.textContent = parseInt(countEl.textContent) + 1;
+                    }
+                });
+            }
+   
+            function localized(ru, kz) {
+                const lang = localStorage.getItem("preferredLanguage") || "ru";
+                return lang === "kz" ? kz : ru;
+            }
+
+            document.querySelectorAll('.matrix-cell').forEach(cell => {
+                cell.addEventListener('click', function () {
+                    const cells = Array.from(document.querySelectorAll('.matrix-cell'));
+                    const index = cells.indexOf(this);
+
+                    const likelihood = Math.floor(index / 5) + 1;
+                    const impact = (index % 5) + 1;
+
+                    const lang = localStorage.getItem('preferredLanguage') || 'ru';
+
+                    const messages = {
+                        ru: {
+                            title: 'Выбран риск',
+                            text: `Вероятность: ${likelihood}, Влияние: ${impact}`,
+                            confirm: 'ОК'
+                        },
+                        kz: {
+                            title: 'Таңдалған тәуекел',
+                            text: `Ықтималдық: ${likelihood}, Әсер: ${impact}`,
+                            confirm: 'Жарайды'
+                        }
+                    };
+
+                    const msg = messages[lang];
+
+                    Swal.fire({
+                        icon: 'info',
+                        title: msg.title,
+                        text: msg.text,
+                        confirmButtonText: msg.confirm
+                    });
+                });
+            });
+
+            document.querySelectorAll(".risk-delete-btn").forEach(btn => {
+                    btn.addEventListener("click", async () => {
+                        const riskId = btn.dataset.id;
+                        console.log("Кнопка удаления нажата, ID риска:", riskId);
+
+                        const lang = document.documentElement.lang || "ru";
+
+                        const confirmResult = await Swal.fire({
+                            title: lang === "kz" ? "Сіз бұл тәуекелді жойғыңыз келе ме?" : "Вы уверены?",
+                            text: lang === "kz" ? "Бұл әрекет қайтымсыз болады!" : "Это действие нельзя будет отменить!",
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonText: lang === "kz" ? "Иә, жою!" : "Да, удалить!",
+                            cancelButtonText: lang === "kz" ? "Бас тарту" : "Отмена"
+                        });
+
+                        if (confirmResult.isConfirmed) {
+                            const res = await fetch(`/api/risk-list/${riskId}`, { method: "DELETE" });
+                            if (res.ok) {
+                                await Swal.fire({
+                                    icon: "success",
+                                    title: lang === "kz" ? "Жойылды!" : "Удалено!",
+                                    text: lang === "kz" ? "Тәуекел сәтті жойылды" : "Риск успешно удалён",
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                                location.reload();
+                            } else {
+                                await Swal.fire({
+                                    icon: "error",
+                                    title: lang === "kz" ? "Қате" : "Ошибка",
+                                    text: lang === "kz" ? "Жою сәтсіз аяқталды" : "Не удалось удалить риск"
+                                });
+                            }
+                        }
+                    });
+                });
+                    
+            document.getElementById('edit-risk-form').addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const riskId = document.getElementById('edit-risk-id').value;
+                const lang = document.documentElement.lang || 'ru';
+
+                const submitBtn = document.getElementById('submitRiskBtn');
+                const originalText = submitBtn.innerHTML;
+
+                const translations = {
+                    saving: lang === 'kz' ? 'Сақталуда...' : 'Сохранение...',
+                    successTitle: lang === 'kz' ? 'Сәтті сақталды!' : 'Успешно!',
+                    successText: lang === 'kz' ? 'Қауіп сәтті жаңартылды' : 'Риск успешно обновлён',
+                    errorTitle: lang === 'kz' ? 'Қате' : 'Ошибка',
+                    errorText: lang === 'kz' ? 'Қауіпті жаңарту сәтсіз аяқталды' : 'Не удалось обновить риск',
+                    buttonText: lang === 'kz' ? 'Жабу' : 'Закрыть'
+                };
+
+                const data = {
+                    likelihood: parseInt(document.getElementById('edit-risk-likelihood').value),
+                    impact: parseInt(document.getElementById('edit-risk-impact').value),
+                    priority: document.querySelector('select[name="priority"]').value,
+                    status: document.getElementById('edit-risk-status').value,
+                };
+
+                if (lang === "kz") {
+                    data.priority_kz = data.priority;
+                    data.status_kz = data.status;
+                } else {
+                    data.priority_kz = "";
+                    data.status_kz = "";
+                }
+
+                try {
+                    submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${translations.saving}`;
+                    submitBtn.disabled = true;
+
+                    const response = await fetch(`/api/risk-list/${riskId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.detail || translations.errorText);
+                    }
+
+                    const result = await response.json();
+
+                    await Swal.fire({
+                        icon: 'success',
+                        title: translations.successTitle,
+                        text: translations.successText,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    location.reload();
+                } catch (error) {
+                    console.error('Ошибка:', error);
+                    await Swal.fire({
+                        icon: 'error',
+                        title: translations.errorTitle,
+                        text: error.message || translations.errorText,
+                        confirmButtonText: translations.buttonText
+                    });
+                } finally {
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                }
+            });
+
+            document.querySelector(".btn.btn-sm.btn-primary")?.addEventListener("click", () => {
+                const modal = new bootstrap.Modal(document.getElementById("addRiskModal"));
+                modal.show();
+                document.getElementById("addRiskForm").reset();
+                delete document.getElementById("addRiskForm").dataset.editId;
+            });
+
+            document.getElementById("addRiskForm").addEventListener("submit", function (e) {
+                e.preventDefault();
+
+                const form = e.target;
+                const lang = document.documentElement.lang || "ru";
+                
+                const data = {
+                    title: form.title.value,
+                    title_kz: form.title_kz.value,
+                    department: form.department.value,
+                    likelihood: parseInt(form.likelihood.value),
+                    impact: parseInt(form.impact.value),
+                    priority: form.priority.value,
+                    status: form.status.value
+                };
+
+                const isEdit = form.dataset.editId;
+                const url = isEdit ? `/api/risk-list/${isEdit}` : "/api/risk-list";
+                const method = isEdit ? "PUT" : "POST";
+
+                fetch(url, {
+                    method: method,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error("Ошибка при сохранении");
+                    return res.json();
+                })
+                .then(() => {
+                    bootstrap.Modal.getInstance(document.getElementById("addRiskModal")).hide();
+                    form.reset();
+                    delete form.dataset.editId;
+
+                    Swal.fire({
+                        icon: "success",
+                        title: lang === "kz" ? "Сақталды!" : "Сохранено!",
+                        text: lang === "kz" ? "Тәуекел сәтті сақталды" : "Риск успешно сохранён",
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+
+                    loadRiskTable();
+                })
+                .catch(err => {
+                    console.error("Ошибка при сохранении риска:", err);
+
+                    Swal.fire({
+                        icon: "error",
+                        title: lang === "kz" ? "Қате!" : "Ошибка!",
+                        text: lang === "kz" ? "Тәуекелді сақтау сәтсіз аяқталды" : "Не удалось сохранить риск"
+                    });
+                });
+            });
+
+            document.getElementById('exportPDF').addEventListener('click', () => exportRiskMap('pdf'));
+            document.getElementById('exportExcel').addEventListener('click', () => exportRiskMap('excel'));
+            
+            function exportRiskMap(format = 'excel') {
+                const lang = localStorage.getItem("preferredLanguage") || 'ru';
+
+                const filters = {
+                    type: typeSelect?.value?.toLowerCase() || '',
+                    department: departmentSelect?.value?.toLowerCase() || '',
+                    status: statusSelect?.value?.toLowerCase() || '',
+                    priority: prioritySelect?.value?.toLowerCase() || '',
+                    dateFrom: dateFrom?.value || '',
+                    dateTo: dateTo?.value || ''
+                };
+
+                const hasFilter = Object.values(filters).some(value => value.trim() !== '');
+
+                const query = new URLSearchParams({ ...filters, lang });
+
+                const url = `/risk_map/export/${format}?${query.toString()}`;
+                window.open(url, '_blank');
+            }
+           
+    });          
+</script>
+{% endblock %}

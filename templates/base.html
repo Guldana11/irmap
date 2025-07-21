@@ -289,7 +289,6 @@
                     <i class="fas fa-caret-down"></i>
                 </button>
 
-
             <div class="dropdown-content">
                 <a href="#" class="dropdown-item" id="profileLink">
                     <i class="fas fa-user"></i>
@@ -307,12 +306,10 @@
             </div>
         </div>
     </header>
-
-          
+         
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Модальное окно профиля -->
     <div class="profile-modal" id="profileModal">
         <div class="profile-content">
             <div class="profile-header">
@@ -401,24 +398,20 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
-    // Language switching functionality
+
     function switchLanguage(lang) {
-        // Set cookie for language preference
         document.cookie = `lang=${lang}; path=/; max-age=2592000`;
-        
-        // Update active button
+              
         document.querySelectorAll('.language-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.lang === lang);
         });
         
-        // Switch text content
         document.querySelectorAll('.lang-text').forEach(el => {
             if (el.dataset[lang]) {
                 el.textContent = el.dataset[lang];
             }
         });
-        
-        
+                
             document.querySelectorAll('input, textarea').forEach(input => {
                 const value = input.getAttribute(`data-placeholder-${lang}`);
                 if (value) {
@@ -427,41 +420,34 @@
             });
             ;
         
-        // Save language preference
         localStorage.setItem('preferredLanguage', lang);
-    }
+
+            }
     
-    // Initialize language
     function initLanguage() {
-        // Check for saved language preference
         const savedLang = localStorage.getItem('preferredLanguage');
         const cookieLang = document.cookie.replace(/(?:(?:^|.*;\s*)lang\s*=\s*([^;]*).*$)|^.*$/, '$1');
         const browserLang = navigator.language.startsWith('kk') ? 'kz' : 'ru';
         
-        // Priority: saved > cookie > browser > default (ru)
         const lang = savedLang || cookieLang || browserLang || 'ru';
         switchLanguage(lang);
     }
     
-    // Event listeners for language buttons
     document.querySelectorAll('.language-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             switchLanguage(this.dataset.lang);
         });
     });
     
-    // Initialize when DOM is loaded
     document.addEventListener('DOMContentLoaded', function() {
         initLanguage();
         
-        // Additional initialization code...
         const userEmailElement = document.getElementById('userEmail');
         if (userEmailElement) {
             localStorage.setItem('currentUserEmail', userEmailElement.textContent.trim());
         }
     });
 
-    // User menu functionality
     const userMenu = document.getElementById('userMenu');
     const userBtn = document.getElementById('userBtn');
     
@@ -476,7 +462,6 @@
         });
     }
 
-    // Profile modal functionality
     async function loadProfileData() {
         try {
             const response = await fetch("/profile/data");
@@ -498,7 +483,6 @@
         }
     }
 
-    // Profile modal event listeners
     const profileLink = document.getElementById('profileLink');
     if (profileLink) {
         profileLink.addEventListener('click', function(e) {
@@ -559,7 +543,6 @@
         });
     }
 
-    // Logout functionality
     const logoutLink = document.getElementById('logoutLink');
     if (logoutLink) {
         logoutLink.addEventListener('click', function(e) {
@@ -573,7 +556,7 @@
                 window.location.href = '/logout';
             }
         });
-    }
+    }    
 </script>
     {% block scripts %}{% endblock %}
 </body>

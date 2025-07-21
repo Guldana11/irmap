@@ -1,4 +1,3 @@
-# routers/cmdb.py
 from fastapi import APIRouter, HTTPException
 import httpx
 from sqlalchemy.orm import Session
@@ -10,7 +9,7 @@ router = APIRouter()
 @router.post("/cmdb/import")
 def import_from_cmdb(db: Session = Depends(get_db)):
     try:
-        response = httpx.get("http://external-cmdb.local/api/assets")  # Заменить на реальный адрес
+        response = httpx.get("http://external-cmdb.local/api/assets") 
         response.raise_for_status()
         external_assets = response.json()
     except Exception as e:
@@ -19,14 +18,12 @@ def import_from_cmdb(db: Session = Depends(get_db)):
     for item in external_assets:
         asset = db.query(Asset).filter(Asset.external_id == item["external_id"]).first()
         if asset:
-            # обновить
             asset.name = item["name"]
             asset.type = item["type"]
             asset.criticality = item["criticality"]
             asset.owner = item["owner"]
         else:
-            # создать
-            asset = Asset(
+                asset = Asset(
                 name=item["name"],
                 type=item["type"],
                 criticality=item["criticality"],

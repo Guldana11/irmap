@@ -1,6 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Оценка рисков{% endblock %}
+{% block title %}
+    {% if lang == 'kz' %}
+        Тәуекелдерді бағалау
+    {% else %}
+        Оценка рисков
+    {% endif %}
+{% endblock %}
 
 {% block custom_css %}
 <style>
@@ -170,8 +176,7 @@
         <h1 class="page-title">
             <span class="lang-text" data-ru="Оценка рисков" data-kz="Тәуекелді бағалау">Оценка рисков</span>
         </h1>
-    </div>
-    
+    </div>    
     <div class="risk-section">
         <p class="lang-text" data-ru="Комплексный анализ рисков по международным стандартам с качественным и количественным подходом. Расчет уровня риска на основе матрицы (вероятность × ущерб) с поддержкой методологий ISO и NIST."
            data-kz="Халықаралық стандарттар бойынша сапалы және сандық тәсілдермен тәуекелді кешенді талдау. ISO және NIST әдістемелерінің қолдауымен (ықтималдық × зақым) матрицасы негізінде тәуекел деңгейін есептеу.">
@@ -183,17 +188,13 @@
                 <span class="lang-text" data-ru="История оценок" data-kz="Бағалау тарихы">История оценок</span>
             </button>
         </form>                        
-        </div>
-       
-    </div>
-    
-    
-    <div class="risk-section">
+        </div>       
+</div>
+  <div class="risk-section">
     <h2>
         <span class="lang-text" data-ru="Оценка риска" data-kz="Тәуекелді бағалау">Оценка риска</span>
     </h2>
-    
-    <div class="risk-assessment-form">
+   <div class="risk-assessment-form">
         <div class="row g-4">
             <div class="col-md-6">
                 <div class="standard-selector">
@@ -214,8 +215,7 @@
                         <option value="octave">OCTAVE</option>
                     </select>
                 </div>
-            </div>
-           
+            </div>           
             <div class="col-md-6">
                 <label for="asset" class="form-label d-flex align-items-center justify-content-between">
                     <span>
@@ -234,8 +234,7 @@
                     {% endfor %}
                 </select>
                 
-            </div>
-         
+            </div>         
             <div class="col-md-6">
                 <label for="threat" class="form-label d-flex align-items-center justify-content-between">
                     <span>
@@ -253,7 +252,6 @@
                         <span class="lang-text" data-ru="Импортировать угрозы" data-kz="Қауіптерді импорттау">Импортировать угрозы</span>
                     </button>
                 </form>
-
                 <select class="form-select" id="threat" name="threat">
                     <option value="" selected disabled class="lang-text" data-ru="Выберите угрозу..." data-kz="Қауіпті таңдаңыз...">
                         Выберите угрозу...
@@ -267,8 +265,7 @@
                         </option>
                     {% endfor %}
                 </select>
-            </div>
-                         
+            </div>                         
             <div class="col-md-6">
                 <label for="vulnerability" class="form-label d-flex align-items-center justify-content-between">
                     <span>
@@ -289,9 +286,7 @@
                     <option value="no_backup" class="lang-text" data-ru="Отсутствие бэкапов" data-kz="Резервтік көшірмелердің болмауы">Отсутствие бэкапов</option>
                 </select>
             </div>
-
-            
-   <div class="col-12 d-flex flex-column align-items-center">
+    <div class="col-12 d-flex flex-column align-items-center">
 
     <div class="mb-4 w-100" style="max-width: 600px;">
         <label class="form-label d-flex align-items-center justify-content-between">
@@ -369,9 +364,7 @@
             </div>
         </div>
     </div>
-
-
-</div>
+    </div>
             
             <form id="riskForm">
         
@@ -380,7 +373,6 @@
                     <i class="fas fa-calculator me-2"></i>
                     <span class="lang-text" data-ru="Оценить риск" data-kz="Тәуекелді бағалау">Оценить риск</span>
                 </button>
-                
             </div>
         </div>
     </div>
@@ -684,7 +676,7 @@
                 </div>
             </div>
             </div>
-</div>
+        </div>
     
     <div class="risk-section">
         <h2>
@@ -779,7 +771,7 @@
         </div>
     </div>
     
-    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -935,11 +927,11 @@
     document.addEventListener('DOMContentLoaded', function() {
         
         const assessBtn = document.getElementById('assessRisk');
-        if (assessBtn) {
-            assessBtn.addEventListener('click', async function (e) {
-            e.preventDefault();
-            await calculateRisk();  
-        });
+            if (assessBtn) {
+                assessBtn.addEventListener('click', async function (e) {
+                e.preventDefault();
+                await calculateRisk();  
+            });
         }
 
         document.getElementById('assessment-standard').addEventListener('change', function() {

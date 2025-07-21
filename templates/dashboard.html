@@ -567,6 +567,76 @@
 
             <div class="module-card">
                 <div class="module-header">
+                    <div class="module-icon" style="background: var(--irmap-blue);">
+                        <i class="fas fa-th-large"></i>
+                    </div>
+                    <h3 class="module-title lang-text" data-ru="Карта рисков" data-kz="Тәуекел картасы">Карта рисков</h3>
+                </div>                                                                        
+                <div class="module-body">
+                    <p class="module-description lang-text" 
+                    data-ru="Визуализирует риски в виде тепловой карты/матрицы. Показывает приоритеты для реагирования."
+                    data-kz="Тәуекелдерді жылулық карта/матрица ретінде көрсету. Жауап беру басымдықтарын көрсету.">
+                        Визуализирует риски в виде тепловой карты/матрицы. Показывает приоритеты для реагирования.
+                    </p>
+                    <div class="module-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">{{ new_status_count }}</div>
+                        <div class="stat-label lang-text"
+                            data-ru="Новых"
+                            data-kz="Жаңалары">Новых</div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-value">{{ in_progress_count }}</div>
+                        <div class="stat-label lang-text"
+                            data-ru="В работе"
+                            data-kz="Жұмыста">В работе</div>
+                    </div>
+
+                    <div class="stat-item">
+                        <div class="stat-value">{{ critical_priority_count }}</div>
+                        <div class="stat-label lang-text"
+                            data-ru="Критичных"
+                            data-kz="Критикалық">Критичных</div>
+                    </div>
+            </div>
+                    <a href="/risk_map" class="btn btn-outline" style="margin-top: 1rem;">
+                        <i class="fas fa-arrow-right"></i> <span class="lang-text" data-ru="Перейти" data-kz="Өту">Перейти</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-icon" style="background: var(--irmap-danger);">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="module-title lang-text" data-ru="Управление мерами" data-kz="Шараларды басқару">Управление мерами</h3>
+                </div>
+                <div class="module-body">
+                    <p class="module-description lang-text" 
+                    data-ru="Хранит и отслеживает реализуемые меры управления рисками. Генерирует отчёты и уведомления."
+                    data-kz="Тәуекелдерді басқару шараларын сақтау және бақылау. Есептер мен хабарламаларды генерациялау.">
+                        Хранит и отслеживает реализуемые меры управления рисками. Генерирует отчёты и уведомления.
+                    </p>
+                    <div class="module-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">7</div>
+                            <div class="stat-label lang-text" data-ru="Мер" data-kz="Шаралар">Мер</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">26</div>
+                            <div class="stat-label lang-text" data-ru="Уведомлений" data-kz="Хабарламалар">Уведомлений</div>
+                        </div>
+                    </div>
+                    <a href="/mitigations" class="btn btn-outline" style="margin-top: 1rem;">
+                        <i class="fas fa-arrow-right"></i> <span class="lang-text" data-ru="Перейти" data-kz="Өту">Перейти</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="module-card">
+                <div class="module-header">
                     <div class="module-icon">
                         <i class="fas fa-file-export"></i>
                     </div>

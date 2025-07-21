@@ -2,8 +2,8 @@ import json
 from deep_translator import GoogleTranslator
 
 INPUT_FILE = "enterprise-attack.json"
-OUTPUT_FILE = "enterprise-attack_translated.json"
-LIMIT = 100
+OUTPUT_FILE = "enterprise-attack-translated.json"
+LIMIT = 500
 
 with open(INPUT_FILE, "r", encoding="utf-8") as f:
     data = json.load(f).get("objects", [])
@@ -55,4 +55,4 @@ for i, item in enumerate(data):
 with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
     json.dump(translated_items, f, ensure_ascii=False, indent=2)
 
-print(f"✅ Переведено и сохранено 100 угроз в {OUTPUT_FILE}")
+print(f"✅ Переведено и сохранено 500 угроз в {OUTPUT_FILE}")

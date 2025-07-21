@@ -1,4 +1,3 @@
-# routes/cmdb_import.py
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from db import get_db
@@ -33,7 +32,6 @@ def import_from_glpi(db: Session = Depends(get_db)):
 
     try:
         with httpx.Client() as client:
-            # Init session
             auth_response = client.get(f"{GLPI_URL}/initSession", headers=headers)
             if auth_response.status_code != 200:
                 return {"error": "GLPI session init failed", "details": auth_response.text}
@@ -53,7 +51,7 @@ def import_from_glpi(db: Session = Depends(get_db)):
             for glpi_type, asset_type in DEVICE_TYPES.items():
                 response = client.get(f"{GLPI_URL}/{glpi_type}", headers=session_headers)
                 if response.status_code != 200:
-                    continue  # пропускаем неудачные запросы
+                    continue  
 
                 items = response.json()
                 total_received += len(items)

@@ -39,7 +39,7 @@ def update_profile(
     phone: str = Form(...),
     position: str = Form(...),
     db: Session = Depends(get_db)
-):
+    ):
     email = request.session.get("user")
     if not email:
         return JSONResponse(status_code=401, content={"error": "Неавторизован"})

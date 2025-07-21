@@ -112,40 +112,23 @@ async def calculate_risk(
         "message": "Оценка риска успешно сохранена"
     }
     
-@router.get("/risk-assessment/history", response_class=HTMLResponse)
-async def risk_history(
-    request: Request,
-    db: Session = Depends(get_db),
-    lang: str = Depends(get_lang)
-    ):
-    assessments = (
-        db.query(RiskAssessment)
-        .options(joinedload(RiskAssessment.asset))
-        .order_by(RiskAssessment.created_at.desc())
-        .all()
-    )
+@router.get("/risk-assessment/history")
+def risk_history(request: Request, lang: str = "ru", db: Session = Depends(get_db)):
+    assessments = db.query(RiskAssessment).all()
 
-    user = request.session.get("user")
-    if not user:
-        return RedirectResponse("/login", status_code=303)
+    threats = db.query(ThreatLibrary).all()
+    threat_dict = {t.name: {"ru": t.name_ru, "kz": t.name_kz} for t in threats}
 
-    if isinstance(user, str):
-        user = {"username": user}
+    for a in assessments:
+        threat_info = threat_dict.get(a.threat, {"ru": a.threat, "kz": a.threat})
+        a.threat_ru = threat_info["ru"]
+        a.threat_kz = threat_info["kz"]
 
-    total_risks = len(assessments)
-    high_risks = len([a for a in assessments if a.level in ['Высокий', 'Критический']])
-
-    return templates.TemplateResponse(
-        "risk_history.html",
-        {
-            "request": request,
-            "user": user,
-            "assessments": assessments,
-            "total_risks": total_risks,
-            "high_risks": high_risks,
-            "lang": lang
-        }
-    )
+    return templates.TemplateResponse("risk_history.html", {
+        "request": request,
+        "assessments": assessments,
+        "lang": lang,
+    })
 
 @router.get("/risk-assessment/export/excel")
 async def export_excel(db: Session = Depends(get_db)):
@@ -300,4 +283,3 @@ async def import_threats_from_local_json(
 
     except Exception as e:
         return {"error": "Импорт из attack_patterns_slim_translated.json не удался", "details": str(e)}
-

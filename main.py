@@ -15,7 +15,8 @@ from routes.cmdb_import import import_from_glpi
 from dotenv import load_dotenv
 from models.asset import Asset
 from models.risk_assessment import RiskAssessment
-from routes import risk_assessment
+from models.risk_map import RiskListEntry
+from routes import risk_assessment, risk_map 
 
 load_dotenv()
 
@@ -47,10 +48,11 @@ app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key="your-super-secret-key")
 app.add_middleware(InjectUserMiddleware)
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 init_db()
 
+app.include_router(risk_map.router)
 app.include_router(auth.router)
 app.include_router(profile_router)
 app.include_router(asset.router)
@@ -75,7 +77,10 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
     total_risks = db.query(RiskAssessment).count()
     high_risks = db.query(RiskAssessment).filter(RiskAssessment.level.in_(['Высокий', 'Критический'])).count()
     high_critical_count = db.query(Asset).filter(Asset.criticality == "High").count()
-
+    critical_priority_count=db.query(RiskListEntry).filter(RiskListEntry.priority.in_(['Критический'])).count()
+    new_status_count=db.query(RiskListEntry).filter(RiskListEntry.status.in_(['Новый'])).count()
+    in_progress_count = db.query(RiskListEntry).filter(RiskListEntry.status.in_(['В работе'])).count()
+ 
 
     return templates.TemplateResponse(
         "dashboard.html",
@@ -85,7 +90,10 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
             "total_assets": total_assets,
             "total_risks": total_risks,
             "high_risks": high_risks,
-            "high_critical_count": high_critical_count
+            "high_critical_count": high_critical_count,
+            "critical_priority_count": critical_priority_count,
+            "new_status_count": new_status_count,
+            "in_progress_count": in_progress_count
         }
     )
 

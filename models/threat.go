@@ -5,5 +5,5 @@ type Threat struct {
 	Name     string `json:"name"`
 	Category string `json:"category"`
 	Severity string `json:"severity"`
-	AssetID  uint   `json:"asset_id"` // связь с активом
+	AssetID  uint   `json:"asset_id"`
 }
