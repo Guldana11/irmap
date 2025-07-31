@@ -664,8 +664,7 @@
                                 data-impact="{{ risk.impact }}"
                                 data-priority="{{ translated_priority }}"
                                 data-status="{{ translated_status }}"
-                                data-created-at="{{ risk.created_at.strftime('%Y-%m-%d')}}">
-                                
+                                data-created-at="{{ risk.created_at.strftime('%Y-%m-%d')}}">                                
                                 <td>RISK-{{ "%03d"|format(risk.id) }}</td>
                                 <td class="lang-text"
                                     data-ru="{{ department_map.get(risk.department.strip().lower(), {}).get('ru', risk.department) }}"
@@ -674,27 +673,22 @@
                                 </td>                                
                                 <td class="lang-text" data-ru="{{ risk.title }}" data-kz="{{ risk.title_kz }}">
                                     {{ risk.title }}
-                                </td>
-                    
+                                </td>                    
                                 <td>{{ risk.likelihood }}</td>
-                                <td>{{ risk.impact }}</td>
-                    
+                                <td>{{ risk.impact }}</td>                    
                                 <td>
                                     <span class="lang-text risk-priority priority-{{ priority_class }}"
                                           data-ru="{{ priority_map.get(priority_key, {}).get('ru', risk.priority) }}"
                                           data-kz="{{ priority_map.get(priority_key, {}).get('kz', risk.priority) }}">
                                       {{ translated_priority }}
                                     </span>
-                                  </td>
-                    
+                                  </td>                    
                                 <td class="lang-text status-cell"
                                     data-ru="{{ status_map.get(status_key, {}).get('ru', risk.status) }}"
                                     data-kz="{{ status_map.get(status_key, {}).get('kz', risk.status) }}">
                                     {{ translated_status }}
-                                </td>
-                    
-                                <td>{{ risk.created_at.strftime('%d.%m.%Y') }}</td>
-                    
+                                </td>                    
+                                <td>{{ risk.created_at.strftime('%d.%m.%Y') }}</td>                    
                                 <td>
                                     <button class="btn btn-sm btn-outline-primary btn-edit"
                                             data-id="{{ risk.id }}"
@@ -702,8 +696,7 @@
                                             data-bs-toggle="modal"
                                             data-bs-target="#editRiskModal">
                                         <i class="fas fa-edit" data-ru-title="Редактировать" data-kz-title="Өңдеу"></i>
-                                    </button>
-                    
+                                    </button>                    
                                     <button class="btn btn-sm btn-outline-danger risk-delete-btn"
                                             data-id="{{ risk.id }}"
                                             data-ru-title="Удалить"
@@ -869,8 +862,6 @@
                     if (!tr) return;
 
                     const lang = document.documentElement.lang; 
-
-                    console.log("Редактирование риска:", tr.dataset);
 
                     document.getElementById("edit-risk-id").value = tr.dataset.id || "";
                     document.getElementById("edit-risk-title").value = lang === "kz" ? tr.dataset.titleKz || "" : tr.dataset.title || "";

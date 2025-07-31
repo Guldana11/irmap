@@ -165,80 +165,80 @@
         <tbody>
             {% for asset in assets %}
             <tr data-id="{{ asset.id }}" 
-    data-name="{{ asset.name|lower }}" 
-    data-type="{{ asset.type }}" 
-    data-criticality="{{ asset.criticality }}"
-    data-department="{{ asset.department }}"
-    data-owner="{{ asset.owner }}"
-    data-status="{{ asset.status }}"
-    data-source="{{ asset.source }}"
-    data-created="{{ asset.created_at.strftime('%Y-%m-%d') if asset.created_at else '-' }}"
-    data-description="{{ asset.description }}"
-    data-inventory="{{ asset.inventory_number }}">
-    <td>
-    <i class="fas 
-      {% if asset.type == 'Server' %}fa-server
-      {% elif asset.type == 'Workstation' %}fa-desktop
-      {% elif asset.type == 'Network' %}fa-network-wired
-      {% elif asset.type == 'Computer'%}fa-computer
-      {% else %}fa-hdd{% endif %}"></i>
-    {{ asset.name }}
-</td>
-<td class="lang-text" data-ru="{{ asset.type }}" data-kz="{{ asset.type }}">
-    {{ asset.type }}
-</td>
-    <td>
-        <span class="badge 
-            {% if asset.criticality == 'High' %}bg-danger
-            {% elif asset.criticality == 'Medium' %}bg-warning
-            {% else %}bg-success{% endif %}">
-            {{ asset.criticality }}
-        </span>
-    </td>
-    <td class="lang-text" data-ru="{{ asset.department or '-' }}" data-kz="
-    {% if asset.department == 'IT отдел' %}IT бөлімі
-    {% elif asset.department == 'Бухгалтерия' %}Есеп бөлімі
-    {% elif asset.department == 'Отдел продаж' %}Сату бөлімі
-    {% elif asset.department == 'Маркетинг' %}Маркетинг
-    {% elif asset.department == 'Финансовый отдел' %}Қаржы бөлімі
-    {% elif asset.department == 'Администрация' %}Әкімшілік
-    {% elif asset.department == 'Поддержка' %}Қолдау қызметі
-    {% else %}-{% endif %}">
-    {{ asset.department or '-' }}
-</td>
-    <td>{{ asset.owner or '-' }}</td>
-    <td>
-        <span class="badge 
-            {% if asset.status == 'Active' %}bg-success
-            {% elif asset.status == 'Inactive' %}bg-secondary
-            {% elif asset.status == 'Maintenance' %}bg-warning
-            {% elif asset.status == 'In_operation' %}bg-primary
-            {% elif asset.status == 'Under_repair' %}bg-danger
-            {% elif asset.status == 'In_reserve' %}bg-info
-            {% else %}bg-light text-dark{% endif %}">
-            {{ asset.status }}
-        </span>
-    </td>
-    <td class="lang-text" data-ru="{{ asset.source }}" data-kz="{% if asset.source == 'Manual' %}Қолмен{% else %}{{ asset.source }}{% endif %}">
-        {{ asset.source }}
-    </td>
-    <td>{{ asset.created_at.strftime("%d.%m.%Y") if asset.created_at else "-" }}</td>
-    <td class="actions">
-        <button class="btn btn-sm btn-outline-primary btn-edit"
-                data-bs-toggle="modal"
-                data-bs-target="#assetModal"
-                data-mode="edit">
-            <i class="fas fa-edit" title="" data-ru-title="Редактировать" data-kz-title="Өңдеу"></i>
-        </button>
-        <button class="btn btn-sm btn-outline-danger btn-delete">
-            <i class="fas fa-trash" title="" data-ru-title="Удалить" data-kz-title="Жою"></i>
-        </button>
-    </td>
-</tr>
+                data-name="{{ asset.name|lower }}" 
+                data-type="{{ asset.type }}" 
+                data-criticality="{{ asset.criticality }}"
+                data-department="{{ asset.department }}"
+                data-owner="{{ asset.owner }}"
+                data-status="{{ asset.status }}"
+                data-source="{{ asset.source }}"
+                data-created="{{ asset.created_at.strftime('%Y-%m-%d') if asset.created_at else '-' }}"
+                data-description="{{ asset.description }}"
+                data-inventory="{{ asset.inventory_number }}">
+                <td>
+                    <i class="fas 
+                    {% if asset.type == 'Server' %}fa-server
+                    {% elif asset.type == 'Workstation' %}fa-desktop
+                    {% elif asset.type == 'Network' %}fa-network-wired
+                    {% elif asset.type == 'Computer'%}fa-computer
+                    {% else %}fa-hdd{% endif %}"></i>
+                    {{ asset.name }}
+                </td>
+                <td class="lang-text" data-ru="{{ asset.type }}" data-kz="{{ asset.type }}">
+                    {{ asset.type }}
+                </td>
+                    <td>
+                        <span class="badge 
+                            {% if asset.criticality == 'High' %}bg-danger
+                            {% elif asset.criticality == 'Medium' %}bg-warning
+                            {% else %}bg-success{% endif %}">
+                            {{ asset.criticality }}
+                        </span>
+                    </td>
+                    <td class="lang-text" data-ru="{{ asset.department or '-' }}" data-kz="
+                    {% if asset.department == 'IT отдел' %}IT бөлімі
+                    {% elif asset.department == 'Бухгалтерия' %}Есеп бөлімі
+                    {% elif asset.department == 'Отдел продаж' %}Сату бөлімі
+                    {% elif asset.department == 'Маркетинг' %}Маркетинг
+                    {% elif asset.department == 'Финансовый отдел' %}Қаржы бөлімі
+                    {% elif asset.department == 'Администрация' %}Әкімшілік
+                    {% elif asset.department == 'Поддержка' %}Қолдау қызметі
+                    {% else %}-{% endif %}">
+                    {{ asset.department or '-' }}
+                </td>
+                    <td>{{ asset.owner or '-' }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if asset.status == 'Active' %}bg-success
+                            {% elif asset.status == 'Inactive' %}bg-secondary
+                            {% elif asset.status == 'Maintenance' %}bg-warning
+                            {% elif asset.status == 'In_operation' %}bg-primary
+                            {% elif asset.status == 'Under_repair' %}bg-danger
+                            {% elif asset.status == 'In_reserve' %}bg-info
+                            {% else %}bg-light text-dark{% endif %}">
+                            {{ asset.status }}
+                        </span>
+                    </td>
+                    <td class="lang-text" data-ru="{{ asset.source }}" data-kz="{% if asset.source == 'Manual' %}Қолмен{% else %}{{ asset.source }}{% endif %}">
+                        {{ asset.source }}
+                    </td>
+                    <td>{{ asset.created_at.strftime("%d.%m.%Y") if asset.created_at else "-" }}</td>
+                    <td class="actions">
+                        <button class="btn btn-sm btn-outline-primary btn-edit"
+                                data-bs-toggle="modal"
+                                data-bs-target="#assetModal"
+                                data-mode="edit">
+                            <i class="fas fa-edit" title="" data-ru-title="Редактировать" data-kz-title="Өңдеу"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger btn-delete">
+                            <i class="fas fa-trash" title="" data-ru-title="Удалить" data-kz-title="Жою"></i>
+                        </button>
+                    </td>
+                </tr>
             {% endfor %}
         </tbody>
-    </table>
-</div>
+       </table>
+    </div>
 
     <div class="assets-pagination">
         {% if total_assets > 0 %}

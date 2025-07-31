@@ -412,17 +412,15 @@
             }
         });
                 
-            document.querySelectorAll('input, textarea').forEach(input => {
+        document.querySelectorAll('input, textarea').forEach(input => {
                 const value = input.getAttribute(`data-placeholder-${lang}`);
                 if (value) {
                     input.placeholder = value;
                 }
-            });
-            ;
-        
+            });                
+       
         localStorage.setItem('preferredLanguage', lang);
-
-            }
+    }
     
     function initLanguage() {
         const savedLang = localStorage.getItem('preferredLanguage');

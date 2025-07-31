@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from db import Base, engine  
+from .measure import Measure
 
 Base.metadata.create_all(bind=engine)
 

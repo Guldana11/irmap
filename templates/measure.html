@@ -1,0 +1,1311 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if lang == 'kz' %}
+        Шараларды басқару
+    {% else %}
+        Управление мерами
+    {% endif %}
+{% endblock %}
+
+{% block custom_css %}
+<style>
+    .measures-container {
+        background-color: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+    }
+    
+    .measures-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .measures-title {
+        font-size: 1.75rem;
+        color: var(--irmap-blue);
+        font-weight: 600;
+    }
+    
+    .badge-new {
+        background-color: #70a7f8 !important;
+    }
+    
+    .badge-in_progress {
+        background-color: #fff3cd !important;
+        color: #856404 !important;
+    }
+    
+    .badge-completed {
+       background-color: #d4edda !important;
+       color: #155724 !important;
+    }
+    
+    .badge-overdue {
+        background-color: #dc3545 !important;
+        color: white !important;
+    }    
+    
+    .measure-filters {
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+        padding: 1rem;
+    }
+
+    .filter-row {
+        display: flex;
+        gap: 16px;
+        flex-wrap: nowrap;
+        align-items: flex-end; 
+    }
+
+    .filter-group {
+         flex: 1 1 220px; 
+        display: flex;
+        flex-direction: column;
+    }
+
+
+    .filter-label {
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--irmap-dark);
+    }
+
+    .filter-actions {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .filter-actions button {
+        flex: 1 1 120px;
+    }
+
+    .filter-group .btn {
+        margin: 0;
+    }
+
+    .filter-group .d-flex {
+        gap: 8px;
+    }
+    
+    .measures-table {
+        background-color: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+    
+    .table-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .table-title {
+        font-size: 1.25rem;
+        color: var(--irmap-blue);
+        font-weight: 600;
+    }
+    
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .action-btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        margin: 0 2px;
+    }
+    
+    .chart-container {
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        height: 350px;            
+        max-width: 600px;        
+        position: relative;       
+    }
+
+    #statusChart {
+        width: 100% !important;
+        height: 90% !important;
+    }
+
+    #dateChart {
+        width: 100%;
+        height: 250px !important;
+    }
+
+    /* Notification styles */
+    .notification-icon {
+        position: relative;
+        cursor: pointer;
+        margin-right: 15px;
+    }
+
+    .notification-badge {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    .notification-item {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+
+    .notification-item.unread {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+
+    .notification-item.overdue {
+        border-left: 3px solid #dc3545;
+    }
+
+    .notification-item.upcoming {
+        border-left: 3px solid #ffc107;
+    }
+
+    .notification-item.new {
+        border-left: 3px solid #17a2b8;
+    }
+
+    .notification-item.no-responsible {
+        border-left: 3px solid #6c757d;
+    }
+
+    .notification-item.stale {
+        border-left: 3px solid #fd7e14;
+    }
+
+   @media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .filter-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-actions button {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+        <div class="container">
+            <div class="page-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="page-title">
+                            <span class="lang-text" data-ru="Управление мерами" data-kz="Шараларды басқару">Управление мерами</span>
+                        </h1>
+                        <p class="text-muted">
+                            <span class="lang-text" 
+                                data-ru="Управление мерами по снижению рисков. Добавление, редактирование и контроль выполнения."
+                                data-kz="Тәуекелдерді азайту бойынша шараларды басқару. Қосу, өңдеу және орындауды бақылау.">
+                                Управление мерами по снижению рисков. Добавление, редактирование и контроль выполнения.
+                            </span>
+                        </p>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <div class="notification-icon" id="notificationIcon" data-bs-toggle="modal" data-bs-target="#notificationsModal">
+                            <i class="fas fa-bell fa-lg"></i>
+                            <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal fade" id="notificationsModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title lang-text" data-ru="Уведомления" data-kz="Хабарландырулар">Уведомления</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div id="notificationsContainer">
+                                <div class="text-center py-3">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <span class="lang-text" data-ru="Закрыть" data-kz="Жабу">Закрыть</span>
+                            </button>
+                            <button type="button" class="btn btn-primary" id="markAllAsRead">
+                                <span class="lang-text" data-ru="Отметить все как прочитанные" data-kz="Барлығын оқылған деп белгілеу">Отметить все как прочитанные</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="measure-filters">
+                <h5>
+                    <span class="lang-text" data-ru="Фильтры" data-kz="Сүзгілер">Фильтры</span>
+                </h5>
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <span class="lang-text" data-ru="Поиск" data-kz="Іздеу">Поиск</span>
+                        </label>
+                        <input type="text" class="form-control" id="searchInput"
+                            placeholder="Поиск..."
+                            data-placeholder-ru="Поиск по названию меры..."
+                            data-placeholder-kz="Шара атауы бойынша іздеу...">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <span class="lang-text" data-ru="Статус" data-kz="Статус">Статус</span>
+                        </label>
+                        {% set status_map = {
+                            'новая': {'ru': 'Новая', 'kz': 'Жаңа'},
+                            'жаңа': {'ru': 'Новая', 'kz': 'Жаңа'},
+                            'в процессе': {'ru': 'В процессе', 'kz': 'Орындау үстінде'},
+                            'орындау үстінде': {'ru': 'В процессе', 'kz': 'Орындау үстінде'},
+                            'завершена': {'ru': 'Завершена', 'kz': 'Аяқталған'},
+                            'аяқталған': {'ru': 'Завершена', 'kz': 'Аяқталған'},
+                            'просрочена': {'ru': 'Просрочена', 'kz': 'Кешіктірілген'},
+                            'кешіктірілген': {'ru': 'Просрочена', 'kz': 'Кешіктірілген'}
+                        } %}
+                        {% set ns = namespace(unique_statuses={}) %}
+                        {% for measure in measures %}
+                            {% set key = measure.status.strip().lower() %}
+                            {% if key in status_map %}
+                                {% set display = status_map[key][lang] %}
+                                {% if display not in ns.unique_statuses %}
+                                    {% set _ = ns.unique_statuses.update({display: key}) %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+
+                        <select class="form-select" id="statusFilter">
+                            <option value="" class="lang-text" data-ru="Все статусы" data-kz="Барлық статустар">
+                            {{ 'Все статусы' if lang == 'ru' else 'Барлық статустар' }}
+                            </option>
+                            {% for display, key in ns.unique_statuses.items() %}
+                            <option value="{{ key }}"
+                                    class="lang-text"
+                                    data-ru="{{ status_map[key]['ru'] }}"
+                                    data-kz="{{ status_map[key]['kz'] }}">
+                                {{ status_map[key][lang] }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="form-label">
+                            <span class="lang-text" data-ru="Тип риска" data-kz="Тәуекел түрі">Тип риска</span>
+                        </label>
+                        <select class="form-select" id="riskTypeFilter">
+                            <option value="" class="lang-text" data-ru="Все типы" data-kz="Барлық түрлер">Все типы</option>
+                            {% for rt in risk_types %}
+                                <option value="{{ rt.id }}" 
+                                        class="lang-text" 
+                                        data-ru="{{ rt.title }}" 
+                                        data-kz="{{ rt.title_kz }}">
+                                    {{ rt.title if lang == 'ru' else rt.title_kz }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <span class="lang-text" data-ru="Дата от" data-kz="Күні бастап">Дата от</span>
+                        </label>
+                        <input type="date" id="dateFrom" class="form-control">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <span class="lang-text" data-ru="Дата до" data-kz="Күні дейін">Дата до</span>
+                        </label>
+                        <input type="date" id="dateTo" class="form-control">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <div class="d-flex align-items-end gap-3">
+                            <button id="applyFilters" class="btn btn-primary">
+                                <span class="lang-text" data-ru="Применить" data-kz="Қолдану">Применить</span>
+                            </button>
+                            <button id="resetFilters" class="btn btn-outline-secondary">
+                                <span class="lang-text" data-ru="Сбросить" data-kz="Қалпына келтіру">Сбросить</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="monitoring-section">
+                <h2><i class="fas fa-chart-line"></i> 
+                    <span class="lang-text" data-ru="Мониторинг" data-kz="Бақылау">Мониторинг</span>
+                </h2>             
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="chart-container mb-4">
+                            <h4 class="lang-text" data-ru="Статусы мер" data-kz="Шаралар статустары">Статусы мер</h4>
+                            <canvas id="statusChart" height="250"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="chart-container mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h4 class="lang-text" data-ru="Распределение по датам" data-kz="Күндер бойынша бөлу">Распределение по датам</h4>
+                                <select id="groupingSelect" class="form-select form-select-sm" style="width: 200px;">
+                                    <option value="day" selected>По дням</option>
+                                    <option value="month">По месяцам</option>
+                                </select>
+                            </div>
+                            <canvas id="dateChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="measures-table">
+                <div class="table-header">
+                    <h4 class="table-title">
+                        <span class="lang-text" data-ru="Список мер" data-kz="Шаралар тізімі">Список мер</span>
+                    </h4>
+                    <div>
+                        <button id="addMeasureBtn" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus me-1"></i>
+                            <span class="lang-text" data-ru="Добавить меру" data-kz="Шара қосу">Добавить меру</span>
+                        </button>
+                        <button id="exportExcel" class="btn btn-sm btn-outline-success ms-2">
+                            <i class="fas fa-file-excel me-1"></i>
+                            <span class="lang-text" data-ru="Excel" data-kz="Excel">Excel</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th class="lang-text" data-ru="Название" data-kz="Атауы">Название</th>
+                                <th class="lang-text" data-ru="Тип риска" data-kz="Тәуекел түрі">Тип риска</th>
+                                <th class="lang-text" data-ru="Ответственный" data-kz="Жауапты">Ответственный</th>
+                                <th class="lang-text" data-ru="Срок" data-kz="Мерзімі">Срок</th>
+                                <th class="lang-text" data-ru="Статус" data-kz="Статус">Статус</th>
+                                <th class="lang-text" data-ru="Действия" data-kz="Әрекеттер">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="measuresTableBody">
+                            {% for measure in measures %}
+                                {% set status_key = measure.status.strip().lower() %}
+                                {% set status_info = status_map.get(status_key, {'ru': measure.status, 'kz': measure.status}) %}
+                                
+                                <tr data-id="{{ measure.id }}"
+                                    data-title="{{ measure.title }}"
+                                    data-title-kz="{{ measure.title_kz }}"
+                                    data-risk-type-id="{{ measure.risk_type_id }}"
+                                    data-risk-type-name="{{ measure.risk_type_name }}"
+                                    data-risk-type-name-kz="{{ measure.risk_type_name_kz }}"
+                                    data-responsible="{{ measure.responsible }}"
+                                    data-due-date="{{ measure.due_date.strftime('%Y-%m-%d') if measure.due_date else '' }}"
+                                    data-status="{{ status_key }}"
+                                    data-description="{{ measure.description }}">
+                                    
+                                    <td>{{ loop.index }}</td>
+                                    <td class="lang-text" data-ru="{{ measure.title }}" data-kz="{{ measure.title_kz }}">
+                                        {{ measure.title if lang == 'ru' else measure.title_kz }}
+                                    </td>
+                                    <td class="lang-text" 
+                                        data-ru="{{ measure.risk_type_name }}" 
+                                        data-kz="{{ measure.risk_type_name_kz }}">
+                                        {{ measure.risk_type_name if lang == 'ru' else measure.risk_type_name_kz }}
+                                    </td>
+                                    <td>{{ measure.responsible }}</td>
+                                    <td>{{ measure.due_date }}</td>
+                                    <td>
+                                        <span class="status-badge badge-{{ status_key.replace(' ', '_') }} lang-text"
+                                            data-ru="{{ status_info.ru }}"
+                                            data-kz="{{ status_info.kz }}">
+                                            {{ status_info.ru if lang == 'ru' else status_info.kz }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary action-btn btn-edit"
+                                                data-id="{{ measure.id }}"
+                                                title="{{ 'Өңдеу' if lang == 'kz' else 'Редактировать' }}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger action-btn btn-delete"
+                                                data-id="{{ measure.id }}"
+                                                title="{{ 'Жою' if lang == 'kz' else 'Удалить' }}">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="addMeasureModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                <form id="addMeasureForm" method="POST">
+                    <div class="modal-header">
+                    <h5 class="modal-title lang-text" data-ru="Добавить меру" data-kz="Жаңа шара қосу">Добавить меру</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <div class="modal-body">
+                    <input type="hidden" name="id" id="add-measure-id">
+
+                    <div class="mb-3">
+                        <label class="form-label lang-text" data-ru="Название (русский)*" data-kz="Атауы (орысша)*">Название (русский)*</label>
+                        <input type="text" class="form-control" name="title" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label lang-text" data-ru="Название (казахский)*" data-kz="Атауы (қазақша)*">Название (казахский)*</label>
+                        <input type="text" class="form-control" name="title_kz" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label lang-text" data-ru="Ответственный" data-kz="Жауапты тұлға">Ответственный</label>
+                        <input type="text" class="form-control" name="responsible">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label lang-text" data-ru="Крайний срок" data-kz="Аяқталу мерзімі">Крайний срок</label>
+                        <input type="date" class="form-control" name="due_date">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label lang-text" data-ru="Тип риска*" data-kz="Тәуекел түрі*">Тип риска*</label>
+                        <select name="risk_type_id" class="form-select" required>
+                            {% for rt in risk_types %}
+                                <option value="{{ rt.id }}"
+                                        data-title="{{ rt.title }}"
+                                        data-title-kz="{{ rt.title_kz }}">
+                                    {{ rt.title if lang == 'ru' else rt.title_kz }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label lang-text" data-ru="Статус" data-kz="Статусы">Статус</label>
+                        <select class="form-select" name="status" required>
+                        <option value="new" class="lang-text" data-ru="Новая" data-kz="Жаңа">Новая</option>
+                        <option value="in_progress" class="lang-text" data-ru="В процессе" data-kz="Орындау барысында">В процессе</option>
+                        <option value="completed" class="lang-text" data-ru="Завершена" data-kz="Аяқталған">Завершена</option>
+                        <option value="overdue" class="lang-text" data-ru="Просрочена" data-kz="Кешіктірілген">Просрочена</option>
+                        </select>
+                    </div>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary lang-text" data-ru="Добавить" data-kz="Қосу">Добавить</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <span class="lang-text" data-ru="Отмена" data-kz="Бас тарту">Отмена</span>
+                    </button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="editMeasureModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+            <form id="editMeasureForm" method="POST">
+                <div class="modal-header">
+                <h5 class="modal-title lang-text" data-ru="Редактировать меру" data-kz="Шараны өңдеу">Редактировать меру</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body">
+                <input type="hidden" name="id" id="edit-measure-id">
+                <div class="mb-3">
+                    <label class="form-label lang-text" data-ru="Название (русский)*" data-kz="Атауы (орысша)*">Название (русский)*</label>
+                    <input type="text" class="form-control" name="title" id="edit-measure-title" disabled>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label lang-text" data-ru="Название (казахский)*" data-kz="Атауы (қазақша)*">Название (казахский)*</label>
+                    <input type="text" class="form-control" name="title_kz" id="edit-measure-title-kz" disabled>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label lang-text" data-ru="Ответственный" data-kz="Жауапты тұлға">Ответственный</label>
+                    <input type="text" class="form-control" name="responsible" id="edit-measure-responsible">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label lang-text" data-ru="Крайний срок" data-kz="Аяқталу мерзімі">Крайний срок</label>
+                    <input type="date" class="form-control" name="due_date" id="edit-measure-due-date">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label lang-text" data-ru="Описание" data-kz="Сипаттамасы">Описание</label>
+                    <textarea class="form-control" name="description" id="edit-measure-description" rows="3"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label lang-text" data-ru="Тип риска*" data-kz="Тәуекел түрі*">Тип риска*</label>
+                    <select name="risk_type_id" class="form-select" id="edit-measure-risk-type-id" disabled>
+                        {% for rt in risk_types %}
+                            <option value="{{ rt.id }}"
+                                    data-title="{{ rt.title }}"
+                                    data-title-kz="{{ rt.title_kz }}">
+                                {{ rt.title if lang == 'ru' else rt.title_kz }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label lang-text" data-ru="Статус" data-kz="Статусы">Статус</label>
+                    <select class="form-select" name="status" id="edit-measure-status" required>
+                    <option value="new" class="lang-text" data-ru="Новая" data-kz="Жаңа">Новая</option>
+                    <option value="in_progress" class="lang-text" data-ru="В процессе" data-kz="Орындау барысында">В процессе</option>
+                    <option value="completed" class="lang-text" data-ru="Завершена" data-kz="Аяқталған">Завершена</option>
+                    <option value="overdue" class="lang-text" data-ru="Просрочена" data-kz="Кешіктірілген">Просрочена</option>
+                    </select>
+                </div>
+                </div>
+                <div class="modal-footer">
+                <button type="submit" class="btn btn-primary lang-text" data-ru="Сохранить" data-kz="Сақтау" id="submitEditMeasureBtn">Сохранить</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <span class="lang-text" data-ru="Отмена" data-kz="Бас тарту">Отмена</span>
+                </button>
+                </div>
+            </form>
+            </div>
+        </div>
+        </div>
+
+        <div class="modal fade" id="measureModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <form id="measureForm">              
+                    </form>
+                </div>
+            </div>
+        </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const statusMap = {
+        'новая': { ru: 'Новая', kz: 'Жаңа', class: 'badge-new' },
+        'жаңа': { ru: 'Новая', kz: 'Жаңа', class: 'badge-new' },
+        'в процессе': { ru: 'В процессе', kz: 'Орындау үстінде', class: 'badge-in_progress' },
+        'орындау үстінде': { ru: 'В процессе', kz: 'Орындау үстінде', class: 'badge-in_progress' },
+        'завершена': { ru: 'Завершена', kz: 'Аяқталған', class: 'badge-completed' },
+        'аяқталған': { ru: 'Завершена', kz: 'Аяқталған', class: 'badge-completed' },
+        'просрочена': { ru: 'Просрочена', kz: 'Кешіктірілген', class: 'badge-overdue' },
+        'кешіктірілген': { ru: 'Просрочена', kz: 'Кешіктірілген', class: 'badge-overdue' }
+    };
+   
+    const searchInput = document.getElementById('searchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const riskTypeFilter = document.getElementById('riskTypeFilter');
+    const dateFrom = document.getElementById('dateFrom');
+    const dateTo = document.getElementById('dateTo');
+    const applyFiltersBtn = document.getElementById('applyFilters');
+    const resetFiltersBtn = document.getElementById('resetFilters');
+    const addMeasureBtn = document.getElementById('addMeasureBtn');
+    const exportExcelBtn = document.getElementById('exportExcel');
+    const measuresTableBody = document.getElementById('measuresTableBody');
+    const measureForm = document.getElementById('measureForm');
+    const measureModal = new bootstrap.Modal(document.getElementById('measureModal'));
+    const notificationIcon = document.getElementById('notificationIcon');
+    const notificationBadge = document.getElementById('notificationBadge');
+    const notificationsModal = new bootstrap.Modal(document.getElementById('notificationsModal'));
+    const notificationsContainer = document.getElementById('notificationsContainer');
+    const markAllAsReadBtn = document.getElementById('markAllAsRead');
+
+    let statusChart = null;
+    let dateChart = null;
+    let currentMeasures = [];
+    let notifications = [];
+
+    document.getElementById("addMeasureBtn").addEventListener("click", function() {
+        const modal = new bootstrap.Modal(document.getElementById("addMeasureModal"));
+        modal.show();
+    });
+
+    document.getElementById("addMeasureForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const lang = document.documentElement.lang || "ru";
+
+        const statusMap = {
+            new: {
+                ru: "Новая",
+                kz: "Жаңа"
+            },
+            in_progress: {
+                ru: "В процессе",
+                kz: "Орындау барысында"
+            },
+            completed: {
+                ru: "Завершена",
+                kz: "Аяқталған"
+            },
+            overdue: {
+                ru: "Просрочена",
+                kz: "Кешіктірілген"
+            }
+        };
+
+        const selectedStatusKey = form.status.value;
+        const localizedStatus = statusMap[selectedStatusKey][lang];
+
+        const data = {
+            id: form["add-measure-id"]?.value || null,
+            title: form.title.value,
+            title_kz: form.title_kz.value,
+            responsible: form.responsible.value,
+            due_date: form.due_date.value,
+            risk_type_id: parseInt(form.risk_type_id.value),
+            status: localizedStatus,  
+            description: form.description?.value || null
+        };
+
+        console.log("DEBUG data:", data);
+
+        try {
+            const response = await fetch("/measure/create", {
+                method: "POST",
+                body: JSON.stringify(data),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) throw new Error("Ошибка при создании меры");
+
+            const result = await response.json();
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById("addMeasureModal"));
+            modal.hide();
+
+            Swal.fire({
+                icon: "success",
+                title: lang === "kz" ? "Сәтті қосылды!" : "Успешно добавлено!",
+                text: lang === "kz" ? "Жаңа шара сәтті қосылды" : "Новая мера успешно добавлена",
+                timer: 1500,
+                showConfirmButton: false
+            });
+
+            form.reset();
+            applyFilters();  
+
+        } catch (err) {
+            console.error("Ошибка при создании меры:", err);
+            Swal.fire({
+                icon: "error",
+                title: lang === "kz" ? "Қате!" : "Ошибка!",
+                text: lang === "kz" ? "Жаңа шараны қосу сәтсіз аяқталды" : "Не удалось добавить новую меру"
+            });
+        }
+    });
+    
+    document.getElementById('editMeasureForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const lang = document.documentElement.lang || 'ru';
+        const measureId = document.getElementById('edit-measure-id').value;
+
+        const submitBtn = document.getElementById('submitEditMeasureBtn');
+        const originalText = submitBtn.innerHTML;
+
+        const translations = {
+            saving: lang === 'kz' ? 'Сақталуда...' : 'Сохранение...',
+            successTitle: lang === 'kz' ? 'Сәтті сақталды!' : 'Успешно!',
+            successText: lang === 'kz' ? 'Шара сәтті жаңартылды' : 'Мера успешно обновлена',
+            errorTitle: lang === 'kz' ? 'Қате' : 'Ошибка',
+            errorText: lang === 'kz' ? 'Шараны жаңарту сәтсіз аяқталды' : 'Не удалось обновить меру',
+            buttonText: lang === 'kz' ? 'Жабу' : 'Закрыть'
+        };
+
+        const data = {
+            responsible: document.getElementById('edit-measure-responsible').value || null,
+            due_date: document.getElementById('edit-measure-due-date').value || null,
+            status: document.getElementById('edit-measure-status').value,
+            description: document.getElementById('edit-measure-description').value || null
+        };
+
+        try {
+            submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${translations.saving}`;
+            submitBtn.disabled = true;
+
+            const response = await fetch(`/measure/update/${measureId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || translations.errorText);
+            }
+
+            await Swal.fire({
+                icon: 'success',
+                title: translations.successTitle,
+                text: translations.successText,
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+            location.reload();
+        } catch (error) {
+            console.error('Ошибка:', error);
+            await Swal.fire({
+                icon: 'error',
+                title: translations.errorTitle,
+                text: error.message || translations.errorText,
+                confirmButtonText: translations.buttonText
+            });
+        } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    });
+
+    function initEditButtons() {
+    const lang = document.documentElement.lang || "ru";
+
+    const statusMap = {
+        new: { ru: "Новая", kz: "Жаңа" },
+        in_progress: { ru: "В процессе", kz: "Орындау барысында" },
+        completed: { ru: "Завершена", kz: "Аяқталған" },
+        overdue: { ru: "Просрочена", kz: "Кешіктірілген" },
+        "Новая": { ru: "Новая", kz: "Жаңа" },
+        "Жаңа": { ru: "Новая", kz: "Жаңа" },
+        "В процессе": { ru: "В процессе", kz: "Орындау барысында" },
+        "Орындау барысында": { ru: "В процессе", kz: "Орындау барысында" },
+       "Аяқталған": { ru: "Завершена", kz: "Аяқталған" },
+        "Завершена": { ru: "Завершена", kz: "Аяқталған" },
+        "Просрочена": { ru: "Просрочена", kz: "Кешіктірілген" },
+        "Кешіктірілген": { ru: "Просрочена", kz: "Кешіктірілген" }
+    };
+
+    document.querySelectorAll(".btn-edit").forEach(button => {
+        button.addEventListener("click", () => {
+            const tr = button.closest("tr");
+            if (!tr) return;
+
+            const measureData = {
+                id: tr.dataset.id || "",
+                title: tr.dataset.title || "",
+                title_kz: tr.dataset.titleKz || tr.dataset.title || "",
+                responsible: tr.dataset.responsible || "",
+                due_date: tr.dataset.dueDate || "",
+                description: tr.dataset.description || "",
+                risk_type_id: tr.dataset.riskTypeId || "",
+                risk_type_name: tr.dataset.riskTypeName || '',
+                risk_type_name_kz: tr.dataset.riskTypeNameKz || tr.dataset.riskTypeName || '',
+                status: tr.dataset.status || ''
+            };
+
+            document.getElementById("edit-measure-id").value = measureData.id;
+            document.getElementById("edit-measure-title").value = lang === "kz" ? measureData.title_kz : measureData.title;
+            document.getElementById("edit-measure-title-kz").value = measureData.title_kz;
+            document.getElementById("edit-measure-responsible").value = measureData.responsible;
+            document.getElementById("edit-measure-due-date").value = measureData.due_date;
+            document.getElementById("edit-measure-description").value = measureData.description;
+            document.getElementById("edit-measure-risk-type-id").value = measureData.risk_type_id;
+            
+            const statusSelect = document.getElementById("edit-measure-status");
+            const selectedStatusKey = measureData.status;
+
+            let matchedStatusKey = '';
+            for (const [key, names] of Object.entries(statusMap)) {
+                if (key === selectedStatusKey || names.ru === selectedStatusKey || names.kz === selectedStatusKey) {
+                    matchedStatusKey = key;
+                    break;
+                }
+            }
+
+            statusSelect.value = matchedStatusKey;
+
+            Array.from(statusSelect.options).forEach(option => {
+                const key = option.value;
+                if (statusMap[key]) {
+                    option.textContent = statusMap[key][lang];
+                }
+            });
+
+            const modal = new bootstrap.Modal(document.getElementById("editMeasureModal"));
+            modal.show();
+
+            updateLangTextElements();
+            });
+        });
+    }
+
+    async function loadNotifications() {
+        try {
+            const response = await fetch('/measure/notifications');
+            if (!response.ok) throw new Error('Ошибка загрузки уведомлений');
+            const data = await response.json();
+            notifications = data || [];
+            updateNotificationBadge();
+            return notifications;
+        } catch (error) {
+            console.error('Ошибка при загрузке уведомлений:', error);
+            return [];
+        }
+    }
+
+    function updateNotificationBadge() {
+        const unreadCount = notifications.filter(n => !n.read).length;
+        if (unreadCount > 0) {
+            notificationBadge.textContent = unreadCount;
+            notificationBadge.style.display = 'flex';
+        } else {
+            notificationBadge.style.display = 'none';
+        }
+    }
+
+    function renderNotifications() {
+        if (notifications.length === 0) {
+            notificationsContainer.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="far fa-bell-slash fa-3x text-muted mb-3"></i>
+                    <p class="text-muted lang-text" data-ru="Нет уведомлений" data-kz="Хабарландырулар жоқ">Нет уведомлений</p>
+                </div>
+            `;
+            return;
+        }
+
+        const lang = document.documentElement.lang || 'ru';
+        let html = '<div class="list-group list-group-flush">';
+        
+        notifications.forEach(notification => {
+            const iconClass = {
+                'overdue': 'fa-exclamation-circle text-danger',
+                'upcoming': 'fa-clock text-warning',
+                'new': 'fa-plus-circle text-info',
+                'no_responsible': 'fa-user-slash text-secondary',
+                'stale': 'fa-hourglass-half text-orange'
+            }[notification.type] || 'fa-info-circle text-primary';
+
+            const typeClass = {
+                'overdue': 'overdue',
+                'upcoming': 'upcoming',
+                'new': 'new',
+                'no_responsible': 'no-responsible',
+                'stale': 'stale'
+            }[notification.type] || '';
+
+            html += `
+                <div class="list-group-item notification-item ${typeClass} ${notification.read ? '' : 'unread'}" 
+                      data-id="${notification.id}" data-read="${notification.read}">
+                    <div class="d-flex align-items-start">
+                        <i class="fas ${iconClass} fa-lg mt-1 me-3"></i>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <strong>${notification.title[lang] || notification.title.ru}</strong>
+                                <small class="text-muted">${new Date(notification.created_at).toLocaleString()}</small>
+                            </div>
+                            <p class="mb-0">${notification.message[lang] || notification.message.ru}</p>
+                            ${notification.measure_id ? `<small class="text-muted">ID меры: ${notification.measure_id}</small>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        notificationsContainer.innerHTML = html;
+        
+        document.querySelectorAll('.notification-item').forEach(item => {
+            item.addEventListener('click', async function() {
+                const notificationId = this.dataset.id;
+                if (this.dataset.read === 'false') {
+                    await markNotificationAsRead(notificationId);
+                    this.dataset.read = 'true';
+                    this.classList.remove('unread');
+                    updateNotificationBadge();
+                }
+            });
+        });
+    }
+
+    async function markNotificationAsRead(notificationId) {
+        try {
+            const response = await fetch(`/measure/notifications/${notificationId}/read`, {
+                method: 'POST'
+            });
+            if (!response.ok) throw new Error('Ошибка обновления статуса уведомления');
+            return await response.json();
+        } catch (error) {
+            console.error('Ошибка при отметке уведомления как прочитанного:', error);
+        }
+    }
+
+    async function markAllNotificationsAsRead() {
+        try {
+            const response = await fetch('/measure/notifications/mark-all-read', {
+                method: 'POST'
+            });
+            if (!response.ok) throw new Error('Ошибка обновления статуса уведомлений');
+            const result = await response.json();
+            notifications = notifications.map(n => ({ ...n, read: true }));
+            updateNotificationBadge();
+            renderNotifications();
+            return result;
+        } catch (error) {
+            console.error('Ошибка при отметке всех уведомлений как прочитанных:', error);
+        }
+    }
+
+    notificationIcon.addEventListener('click', async function() {
+        await loadNotifications();
+        renderNotifications();
+    });
+
+    markAllAsReadBtn.addEventListener('click', async function() {
+        await markAllNotificationsAsRead();
+    });
+
+    async function loadMeasures() {
+        try {
+            const response = await fetch('/measure/list');
+            if (!response.ok) throw new Error('Ошибка загрузки данных');
+            return await response.json();
+        } catch (error) {
+            console.error('Ошибка при загрузке мер:', error);
+            showAlert('error', 'Ошибка загрузки', 'Не удалось загрузить список мер');
+            return [];
+        }
+    }
+
+    function initStatusChart(measures) {
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        const lang = document.documentElement.lang || 'ru';
+        const statusCounts = { new: 0, in_progress: 0, completed: 0, overdue: 0 };
+
+        measures.forEach(measure => {
+            const statusKey = measure.status.toLowerCase();
+            if (statusKey.includes('нов') || statusKey.includes('жаңа')) statusCounts.new++;
+            else if (statusKey.includes('в процессе') || statusKey.includes('орындау')) statusCounts.in_progress++;
+            else if (statusKey.includes('заверш') || statusKey.includes('аяқталған')) statusCounts.completed++;
+            else if (statusKey.includes('проср') || statusKey.includes('кешіктір')) statusCounts.overdue++;
+        });
+
+        if (statusChart) statusChart.destroy();
+
+        statusChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    lang === 'kz' ? 'Жаңа' : 'Новые',
+                    lang === 'kz' ? 'Орындау үстінде' : 'В процессе',
+                    lang === 'kz' ? 'Аяқталған' : 'Завершены',
+                    lang === 'kz' ? 'Кешіктірілген' : 'Просрочены'
+                ],
+                datasets: [{
+                    label: lang === 'kz' ? 'Шаралар саны' : 'Количество мер',
+                    data: Object.values(statusCounts),
+                    backgroundColor: ['#70a7f8', '#fff3cd', '#d4edda', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, precision: 0 }
+                    }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    document.getElementById('groupingSelect')?.addEventListener('change', () => {
+        const grouping = document.getElementById('groupingSelect').value;
+        initDateChart(currentMeasures, grouping);
+    });
+
+    function initDateChart(measures, grouping = 'day') {
+        const ctx = document.getElementById('dateChart')?.getContext('2d');
+        if (!ctx) return;
+
+        const dateCounts = {};
+
+        measures.forEach(measure => {
+            if (measure.due_date) {
+                const dateObj = new Date(measure.due_date);
+                let key;
+
+                if (grouping === 'month') {
+                    const month = dateObj.getMonth() + 1;
+                    const year = dateObj.getFullYear();
+                    key = `${year}-${month.toString().padStart(2, '0')}`; 
+                } else {
+                    key = measure.due_date.split('T')[0]; 
+                }
+
+                dateCounts[key] = (dateCounts[key] || 0) + 1;
+            }
+        });
+
+        const labels = Object.keys(dateCounts).sort();
+
+        if (dateChart) dateChart.destroy();
+
+        dateChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: grouping === 'month' ? 'По месяцам' : 'По дням',
+                    data: labels.map(label => dateCounts[label]),
+                    backgroundColor: '#36a2eb'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, precision: 0 }
+                    },
+                    x: {
+                        ticks: { autoSkip: true, maxRotation: 90 }
+                    }
+                }
+            }
+        });
+    }
+
+    async function applyFilters() {
+        const lang = document.documentElement.lang || 'ru';
+        localStorage.setItem('preferredLanguage', lang); 
+        const searchText = searchInput.value.toLowerCase();
+        const status = statusFilter.value;
+        const riskTypeId = riskTypeFilter.value;
+        const fromDate = dateFrom.value;
+        const toDate = dateTo.value;
+
+        const measures = await loadMeasures();
+
+        const filtered = measures.filter(measure => {
+            const title = (lang === 'kz' ? measure.title_kz || measure.title : measure.title).toLowerCase();
+            const riskType = (lang === 'kz' ? measure.risk_type_name_kz || measure.risk_type_name : measure.risk_type_name || '').toLowerCase();
+            const responsible = (measure.responsible || '').toLowerCase();
+            const statusValue = (measure.status || '').toLowerCase();
+
+            if (searchText && !(
+                title.includes(searchText) ||
+                riskType.includes(searchText) ||
+                responsible.includes(searchText)
+            )) return false;
+
+            if (status && statusValue !== status.toLowerCase()) return false;
+            if (riskTypeId && measure.risk_type_id != riskTypeId) return false;
+            if (fromDate && measure.due_date < fromDate) return false;
+            if (toDate && measure.due_date > toDate) return false;
+
+            return true;
+        });
+
+        initStatusChart(filtered);
+        const grouping = document.getElementById('groupingSelect')?.value || 'day';
+        currentMeasures = filtered;
+        initDateChart(filtered, grouping);
+        renderTable(filtered);
+        switchLanguage(lang);
+    }
+
+    function renderTable(measures) {
+    const lang = document.documentElement.lang || 'ru';
+    measuresTableBody.innerHTML = '';
+
+    measures.forEach((measure, index) => {
+        const statusKey = measure.status.toLowerCase();
+        const statusInfo = statusMap[statusKey] || { ru: measure.status, kz: measure.status, class: '' };
+
+        const row = document.createElement('tr');
+
+        row.dataset.id = measure.id;
+        row.dataset.title = measure.title;
+        row.dataset.titleKz = measure.title_kz || measure.title;
+        row.dataset.riskTypeId = measure.risk_type_id || '';
+        row.dataset.riskTypeName = measure.risk_type_name || '';
+        row.dataset.riskTypeNameKz = measure.risk_type_name_kz || measure.risk_type_name || '';
+        row.dataset.responsible = measure.responsible || '';
+        row.dataset.dueDate = measure.due_date || '';
+        row.dataset.status = measure.status || 'new';
+        row.dataset.description = measure.description || '';
+
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td class="lang-text" data-ru="${measure.title}" data-kz="${measure.title_kz || measure.title}">
+                ${lang === 'kz' ? (measure.title_kz || measure.title) : measure.title}
+            </td>
+            <td class="lang-text" data-ru="${measure.risk_type_name}" data-kz="${measure.risk_type_name_kz || measure.risk_type_name}">
+                ${lang === 'kz' ? (measure.risk_type_name_kz || measure.risk_type_name) : measure.risk_type_name}
+            </td>
+            <td>${measure.responsible || '-'}</td>
+            <td>${measure.due_date || '-'}</td>
+            <td>
+                <span class="status-badge ${statusInfo.class} lang-text" data-ru="${statusInfo.ru}" data-kz="${statusInfo.kz}">
+                    ${lang === 'kz' ? statusInfo.kz : statusInfo.ru}
+                </span>
+            </td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary action-btn btn-edit" data-id="${measure.id}" title="${lang === 'kz' ? 'Өңдеу' : 'Редактировать'}">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger action-btn btn-delete" data-id="${measure.id}" title="${lang === 'kz' ? 'Жою' : 'Удалить'}">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </td>
+        `;
+        measuresTableBody.appendChild(row);
+    });
+
+    initEditButtons();
+    initDeleteButtons();
+}
+
+    applyFiltersBtn.addEventListener('click', applyFilters);
+    
+    resetFiltersBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        statusFilter.value = '';
+        riskTypeFilter.value = '';
+        dateFrom.value = '';
+        dateTo.value = '';
+        applyFilters();
+    });
+
+    addMeasureBtn.addEventListener('click', () => {
+        measureForm.reset();
+        document.getElementById('measureId').value = '';
+        measureModal.show();
+    });
+
+    exportExcelBtn.addEventListener('click', () => {
+        const lang = document.documentElement.lang || 'ru';
+        const params = new URLSearchParams();
+        if (searchInput.value) params.append('search', searchInput.value);
+        if (statusFilter.value) params.append('status', statusFilter.value);
+        if (riskTypeFilter.value) params.append('risk_type_id', riskTypeFilter.value);
+        if (dateFrom.value) params.append('date_from', dateFrom.value);
+        if (dateTo.value) params.append('date_to', dateTo.value);
+        params.append('lang', lang);
+        window.open(`/measure/export/excel?${params.toString()}`, '_blank');
+    });
+
+    function initDeleteButtons() {
+        document.querySelectorAll('.btn-delete').forEach(button => {
+            button.addEventListener('click', async () => {
+                const measureId = button.dataset.id;
+                const lang = document.documentElement.lang || 'ru';
+
+                const confirmText = lang === 'kz' ? 'Сіз бұл шараны жойғыңыз келетініне сенімдісіз бе?' : 'Вы уверены, что хотите удалить эту меру?';
+                const successText = lang === 'kz' ? 'Мера сәтті жойылды' : 'Мера успешно удалена';
+                const errorText = lang === 'kz' ? 'Жою кезінде қате орын алды' : 'Произошла ошибка при удалении';
+
+                const confirmed = await Swal.fire({
+                    title: confirmText,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: lang === 'kz' ? 'Иә, жою' : 'Да, удалить',
+                    cancelButtonText: lang === 'kz' ? 'Болдырмау' : 'Отмена'
+                });
+
+                if (confirmed.isConfirmed) {
+                    try {
+                        const response = await fetch(`/measure/delete/${measureId}`, {
+                            method: 'DELETE'
+                        });
+
+                        if (response.ok) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: successText,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+
+                            button.closest('tr').remove();
+                        } else {
+                            const error = await response.json();
+                            Swal.fire({
+                                icon: 'error',
+                                title: errorText,
+                                text: error.detail || ''
+                            });
+                        }
+                    } catch (error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: errorText,
+                            text: error.message
+                        });
+                    }
+                }
+            });
+        });
+    }
+
+    applyFilters();
+    loadNotifications();
+});
+</script>
+{% endblock %}

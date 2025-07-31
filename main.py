@@ -16,7 +16,8 @@ from dotenv import load_dotenv
 from models.asset import Asset
 from models.risk_assessment import RiskAssessment
 from models.risk_map import RiskListEntry
-from routes import risk_assessment, risk_map 
+from models.measure import Measure, Notification
+from routes import risk_assessment, risk_map, measure
 
 load_dotenv()
 
@@ -58,6 +59,7 @@ app.include_router(profile_router)
 app.include_router(asset.router)
 app.include_router(cmdb_import.router, prefix="/cmdb")
 app.include_router(risk_assessment.router)
+app.include_router(measure.router)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -80,7 +82,8 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
     critical_priority_count=db.query(RiskListEntry).filter(RiskListEntry.priority.in_(['Критический'])).count()
     new_status_count=db.query(RiskListEntry).filter(RiskListEntry.status.in_(['Новый'])).count()
     in_progress_count = db.query(RiskListEntry).filter(RiskListEntry.status.in_(['В работе'])).count()
- 
+    total_measures = db.query(Measure).count()
+    total_notifications = db.query(Notification).count()
 
     return templates.TemplateResponse(
         "dashboard.html",
@@ -93,7 +96,9 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
             "high_critical_count": high_critical_count,
             "critical_priority_count": critical_priority_count,
             "new_status_count": new_status_count,
-            "in_progress_count": in_progress_count
+            "in_progress_count": in_progress_count,
+            "total_measures": total_measures,  
+            "total_notifications": total_notifications  
         }
     )
 
